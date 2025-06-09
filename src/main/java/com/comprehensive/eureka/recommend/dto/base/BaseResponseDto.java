@@ -1,5 +1,7 @@
 package com.comprehensive.eureka.recommend.dto.base;
 
+import com.comprehensive.eureka.recommend.dto.response.ErrorResponseDto;
+import com.comprehensive.eureka.recommend.exception.ErrorCode;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,6 +18,22 @@ public class BaseResponseDto<T> {
                 .statusCode(200)
                 .message("success")
                 .data(data)
+                .build();
+    }
+
+    public static BaseResponseDto<Void> voidSuccess() {
+        return BaseResponseDto.<Void>builder()
+                .statusCode(200)
+                .message("success")
+                .data(null)
+                .build();
+    }
+
+    public static BaseResponseDto<ErrorResponseDto> fail(ErrorCode errorCode) {
+        return BaseResponseDto.<ErrorResponseDto>builder()
+                .statusCode(errorCode.getCode())
+                .message("fail")
+                .data(ErrorResponseDto.of(errorCode))
                 .build();
     }
 }
