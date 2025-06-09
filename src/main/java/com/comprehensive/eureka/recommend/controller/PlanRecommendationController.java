@@ -1,0 +1,23 @@
+package com.comprehensive.eureka.recommend.controller;
+
+import com.comprehensive.eureka.recommend.dto.RecommendationDto;
+import com.comprehensive.eureka.recommend.dto.base.BaseResponseDto;
+import com.comprehensive.eureka.recommend.service.PlanRecommendationService;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+public class PlanRecommendationController {
+
+    private final PlanRecommendationService planRecommendationService;
+
+    @GetMapping("/recommend/{userId}")
+    public BaseResponseDto<List<RecommendationDto>> recommendPlan(@PathVariable Long userId) {
+        List<RecommendationDto> recommendation = planRecommendationService.recommendPlan(userId);
+        return BaseResponseDto.success(recommendation);
+    }
+}
