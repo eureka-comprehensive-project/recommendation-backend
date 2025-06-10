@@ -3,13 +3,15 @@ package com.comprehensive.eureka.recommend.service.impl;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
 import com.comprehensive.eureka.recommend.dto.RecommendationDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
+import com.comprehensive.eureka.recommend.entity.UserPreference;
 import com.comprehensive.eureka.recommend.exception.ErrorCode;
 import com.comprehensive.eureka.recommend.exception.RecommendationException;
+import com.comprehensive.eureka.recommend.repository.UserPreferenceRepository;
 import com.comprehensive.eureka.recommend.service.PlanRecommendationService;
 import com.comprehensive.eureka.recommend.service.engine.BasicRecommender;
-import com.comprehensive.eureka.recommend.util.api.ChatbotApiServiceClient;
 import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,13 +21,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PlanRecommendationServiceImpl implements PlanRecommendationService {
 
+    private final UserPreferenceRepository userPreferenceRepository;
     private final PlanApiServiceClient planApiServiceClient;
-
     private final BasicRecommender basicRecommender;
 
     @Override
     public List<RecommendationDto> recommendPlan(Long userId) {
         List<PlanDto> allPlans = fetchAllPlans();
+        UserPreferenceDto userPreference = fetchUserPreference(userId);
 
         if (userPreference.getPreferenceDataUsage() == null && userPreference.getPreferencePrice() == null
                 && userPreference.getPreferenceSharedDataUsage() == null) {
@@ -50,11 +53,31 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     }
 
     private UserPreferenceDto fetchUserPreference(Long userId) {
-        try {
-            return chatbotApiServiceClient.getUserPreference(userId);
-        } catch (Exception e) {
-            log.error("[외부 API 호출 실패] userId: {} 의 사용자 선호 정보 호출에 실패했습니다.", userId, e);
+        Optional<UserPreference> userPreferenceOptional = userPreferenceRepository.findByUserId(userId);
+
+        if (userPreferenceOptional.isEmpty()) {
+            log.error("[사용자 선호 정보 조회 실패] userId: {} 에 대한 사용자 선호 정보를 찾을 수 없습니다.", userId);
             throw new RecommendationException(ErrorCode.USER_PREFERENCE_LOAD_FAILURE);
         }
+
+        return convertEntityToDto(userPreferenceOptional.get());
+    }
+
+    private UserPreferenceDto convertEntityToDto(UserPreference userPreference) {
+        if (userPreference == null) {
+            return null;
+        }
+
+        return UserPreferenceDto.builder()
+                .userId(userPreference.getUserId())
+                .preferenceDataUsage(userPreference.getPreferredDataAllowance())
+                .preferenceDataUsageUnit(userPreference.getPreferredDataUnit())
+                .preferenceSharedDataUsage(userPreference.getPreferredSharedDataAllowance())
+                .preferenceSharedDataUsageUnit(userPreference.getPreferredSharedDataUnit())
+                .preferencePrice(userPreference.getPreferredPrice())
+                .preferenceBenefit(userPreference.getPreferredBenefit())
+                .isPreferenceFamilData(userPreference.isPreferredFamilyData())
+                .preferenceValueAddedCallUsage(userPreference.getPreferredAdditionalCallAllowance())
+                .build();
     }
 }
