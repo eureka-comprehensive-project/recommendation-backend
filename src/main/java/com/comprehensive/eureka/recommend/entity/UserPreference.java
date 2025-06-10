@@ -1,11 +1,13 @@
 package com.comprehensive.eureka.recommend.entity;
 
+import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +15,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_preference")
@@ -39,4 +42,15 @@ public class UserPreference {
     private boolean preferredFamilyData;
 
     private Integer preferredAdditionalCallAllowance;
+
+    public void update(UserPreferenceDto dto) {
+        this.preferredDataAllowance = dto.getPreferenceDataUsage();
+        this.preferredDataUnit = dto.getPreferenceDataUsageUnit();
+        this.preferredSharedDataAllowance = dto.getPreferenceSharedDataUsage();
+        this.preferredSharedDataUnit = dto.getPreferenceSharedDataUsageUnit();
+        this.preferredPrice = dto.getPreferencePrice();
+        this.preferredBenefit = dto.getPreferenceBenefit();
+        this.preferredFamilyData = dto.isPreferenceFamilData();
+        this.preferredAdditionalCallAllowance = dto.getPreferenceValueAddedCallUsage();
+    }
 }
