@@ -20,14 +20,12 @@ import org.springframework.stereotype.Service;
 public class PlanRecommendationServiceImpl implements PlanRecommendationService {
 
     private final PlanApiServiceClient planApiServiceClient;
-    private final ChatbotApiServiceClient chatbotApiServiceClient;
 
     private final BasicRecommender basicRecommender;
 
     @Override
     public List<RecommendationDto> recommendPlan(Long userId) {
         List<PlanDto> allPlans = fetchAllPlans();
-        UserPreferenceDto userPreference = chatbotApiServiceClient.getUserPreference(userId);
 
         if (userPreference.getPreferenceDataUsage() == null && userPreference.getPreferencePrice() == null
                 && userPreference.getPreferenceSharedDataUsage() == null) {
