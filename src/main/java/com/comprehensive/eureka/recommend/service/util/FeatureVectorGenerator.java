@@ -14,9 +14,9 @@ public class FeatureVectorGenerator {
 
     public double[] createUserFeatureVector(UserPreferenceDto pref, double avgDataUsage) {
 
-        // 데이터 단위 변환 작업 수행 필요
+        double preferenceDataUsage = UnitConverter.convertToGigabytes(pref.getPreferenceDataUsage(), pref.getPreferenceDataUsageUnit());
 
-        double combinedDataUsage = pref.getPreferenceDataUsage() * WeightConstant.DATA_PREFERENCE_WEIGHT + avgDataUsage * WeightConstant.DATA_PATTERN_WEIGHT;
+        double combinedDataUsage = preferenceDataUsage * WeightConstant.DATA_PREFERENCE_WEIGHT + avgDataUsage * WeightConstant.DATA_PATTERN_WEIGHT;
 
         return new double[]{
                 normalizer.normalizeDataUsage(combinedDataUsage),
@@ -27,8 +27,10 @@ public class FeatureVectorGenerator {
 
     public double[] createPlanFeatureVector(PlanDto plan) {
 
+        double planDataAllowance = UnitConverter.convertToGigabytes(plan.getDataAllowance(), plan.getDataAllowanceUnit());
+
         return new double[] {
-                normalizer.normalizeDataUsage(plan.getDataAllowance().doubleValue()),
+                normalizer.normalizeDataUsage(planDataAllowance),
                 normalizer.normalizePrice(plan.getPrice()),
                 normalizer.normalizeSharedDataUsage(plan.getSharedDataAllowance()),
         };
