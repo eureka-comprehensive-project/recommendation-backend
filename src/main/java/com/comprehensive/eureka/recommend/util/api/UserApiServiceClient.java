@@ -4,6 +4,7 @@ import com.comprehensive.eureka.recommend.constant.DomainConstant;
 import com.comprehensive.eureka.recommend.dto.base.BaseResponseDto;
 import com.comprehensive.eureka.recommend.dto.request.UserDataRecordRequestDto;
 import com.comprehensive.eureka.recommend.dto.response.UserDataRecordResponseDto;
+import com.comprehensive.eureka.recommend.dto.response.UserPlanRecordResponseDto;
 import com.comprehensive.eureka.recommend.util.RestUtil;
 import java.time.LocalDate;
 import java.util.List;
@@ -36,6 +37,16 @@ public class UserApiServiceClient {
                 DomainConstant.BASE_DOMAIN + "user-data-record/usage",
                 requestDto,
                 new ParameterizedTypeReference<BaseResponseDto<List<UserDataRecordResponseDto>>>() {}
+        );
+
+        return response.getData();
+    }
+
+    public List<UserPlanRecordResponseDto> getActiveUserPlans(List<Long> userIds) {
+        BaseResponseDto<List<UserPlanRecordResponseDto>> response = restUtil.post(
+                DomainConstant.USER_DOMAIN + "user-plan-record/valid-contract",
+                userIds,
+                new ParameterizedTypeReference<BaseResponseDto<List<UserPlanRecordResponseDto>>>() {}
         );
 
         return response.getData();

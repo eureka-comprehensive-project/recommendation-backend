@@ -4,6 +4,7 @@ import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.entity.UserPreference;
 import com.comprehensive.eureka.recommend.repository.UserPreferenceRepository;
 import com.comprehensive.eureka.recommend.service.UserPreferenceService;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,16 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
         }
     }
 
+    @Override
+    public List<UserPreferenceDto> getAllUserPreferences() {
+        log.info("getAllUserPreferences");
+
+        List<UserPreference> allUserPreferences = userPreferenceRepository.findAll();
+        return allUserPreferences.stream()
+                .map(this::convertEntityToDto)
+                .toList();
+    }
+
     private UserPreference convertDtoToEntity(UserPreferenceDto userPreferenceDto) {
         return UserPreference.builder()
                 .userId(userPreferenceDto.getUserId())
@@ -43,8 +54,22 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
                 .preferredSharedDataUnit(userPreferenceDto.getPreferenceSharedDataUsageUnit())
                 .preferredPrice(userPreferenceDto.getPreferencePrice())
                 .preferredBenefit(userPreferenceDto.getPreferenceBenefit())
-                .preferredFamilyData(userPreferenceDto.isPreferenceFamilData())
+                .preferredFamilyData(userPreferenceDto.isPreferenceFamilyData())
                 .preferredAdditionalCallAllowance(userPreferenceDto.getPreferenceValueAddedCallUsage())
+                .build();
+    }
+
+    private UserPreferenceDto convertEntityToDto(UserPreference userPreference) {
+        return UserPreferenceDto.builder()
+                .userId(userPreference.getUserId())
+                .preferenceDataUsage(userPreference.getPreferredDataAllowance())
+                .preferenceDataUsageUnit(userPreference.getPreferredDataUnit())
+                .preferenceSharedDataUsage(userPreference.getPreferredSharedDataAllowance())
+                .preferenceSharedDataUsageUnit(userPreference.getPreferredSharedDataUnit())
+                .preferencePrice(userPreference.getPreferredPrice())
+                .preferenceBenefit(userPreference.getPreferredBenefit())
+                .isPreferenceFamilyData(userPreference.isPreferredFamilyData())
+                .preferenceValueAddedCallUsage(userPreference.getPreferredAdditionalCallAllowance())
                 .build();
     }
 }

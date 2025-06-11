@@ -11,6 +11,7 @@ import com.comprehensive.eureka.recommend.repository.UserPreferenceRepository;
 import com.comprehensive.eureka.recommend.service.PlanRecommendationService;
 import com.comprehensive.eureka.recommend.service.engine.BasicRecommender;
 import com.comprehensive.eureka.recommend.service.engine.UserPlanSimilarRecommender;
+import com.comprehensive.eureka.recommend.service.engine.UserSimilarRecommender;
 import com.comprehensive.eureka.recommend.service.util.PlanFilter;
 import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import com.comprehensive.eureka.recommend.util.api.UserApiServiceClient;
@@ -34,6 +35,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
 
     private final BasicRecommender basicRecommender;
     private final UserPlanSimilarRecommender userPlanSimilarRecommender;
+    private final UserSimilarRecommender userSimilarRecommender;
 
     private final PlanFilter planFilter;
 
@@ -66,6 +68,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
             // 나의 통신 성향과 다른 사람들의 통신 성향을 비교
             // 유사한 성향을 가진 유저를 찾아서 해당 유저가 어떤 요금제를 사용하는지 판단
             // 해당 요금제 추천
+            List<RecommendationDto> userSimilarityResults = userSimilarRecommender.recommendBySimilarUsers(userId, userPreference, userDataHistory, targetPlans);
 
             // 3번 사용자 통신 성향에 가중치 부여 후 점수 계산
             // 디비에서 사용자 통신성향 추출 -> 통신 섷향의 각 필드에 가중치 부여
@@ -135,7 +138,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
                 .preferenceSharedDataUsageUnit(userPreference.getPreferredSharedDataUnit())
                 .preferencePrice(userPreference.getPreferredPrice())
                 .preferenceBenefit(userPreference.getPreferredBenefit())
-                .isPreferenceFamilData(userPreference.isPreferredFamilyData())
+                .isPreferenceFamilyData(userPreference.isPreferredFamilyData())
                 .preferenceValueAddedCallUsage(userPreference.getPreferredAdditionalCallAllowance())
                 .build();
     }
