@@ -8,7 +8,9 @@ import com.comprehensive.eureka.recommend.service.UserPreferenceService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +21,7 @@ public class PlanRecommendationController {
     private final UserPreferenceService userPreferenceService;
     private final PlanRecommendationService planRecommendationService;
 
-    @GetMapping("/recommend/{userId}")
+    @PostMapping("/recommend/{userId}")
     public BaseResponseDto<List<RecommendationDto>> recommendPlan(@PathVariable Long userId, @RequestBody UserPreferenceDto userPreferenceDto) {
         userPreferenceService.updateUserPreference(userId, userPreferenceDto);
         List<RecommendationDto> recommendation = planRecommendationService.recommendPlan(userId);
