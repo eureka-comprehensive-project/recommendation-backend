@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +31,8 @@ import org.springframework.stereotype.Component;
 public class UserSimilarRecommender {
     private final UserPreferenceService userPreferenceService;
 
-    private UserApiServiceClient userApiServiceClient;
-    private PlanApiServiceClient planApiServiceClient;
+    private final UserApiServiceClient userApiServiceClient;
+    private final PlanApiServiceClient planApiServiceClient;
 
     private final DataRecordAvgCalculator dataRecordAvgCalculator;
     private final FeatureVectorGenerator featureVectorGenerator;
@@ -45,10 +46,28 @@ public class UserSimilarRecommender {
             List<UserDataRecordResponseDto> targetUserHistory,
             List<PlanDto> allPlans
     ) {
-        List<SimilarUserResult> similarUsers = findSimilarUsers(targetUserId, targetUserPreference, targetUserHistory);
-        Map<Integer, Double> averagePlanScores = calculateAveragePlanScores(similarUsers);
+        log.info("사용자 간 유사도 기반 추천 로직 시작. 대상 사용자 ID: {}", targetUserId);
+        try {
+            List<SimilarUserResult> similarUsers = findSimilarUsers(targetUserId, targetUserPreference, targetUserHistory);
 
-        return buildRecommendations(averagePlanScores, allPlans);
+            if (similarUsers.isEmpty()) {
+                log.warn("대상 사용자와 유사한 사용자를 찾을 수 없어 추천을 종료합니다.");
+                return new ArrayList<>();
+            }
+
+            Map<Integer, Double> averagePlanScores = calculateAveragePlanScores(similarUsers);
+            List<RecommendationDto> recommendations = buildRecommendations(averagePlanScores, allPlans);
+            log.info("사용자 간 유사도 기반 추천 로직 완료");
+
+            return recommendations;
+
+        } catch (RecommendationException e) {
+            throw e;
+
+        } catch (Exception e) {
+            log.error("사용자 간 유사도 추천 프로세스 중 오류 발생. 사용자 ID: {}", targetUserId, e);
+            throw new RecommendationException(ErrorCode.USER_SIMILAR_RECOMMENDATION_FAILURE);
+        }
     }
 
     private List<SimilarUserResult> findSimilarUsers(
@@ -57,23 +76,29 @@ public class UserSimilarRecommender {
             List<UserDataRecordResponseDto> targetUserHistory
     ) {
         List<UserPreferenceDto> allPreferences = userPreferenceService.getAllUserPreferences();
+        log.debug("총 {}명의 사용자 선호 정보를 조회하여 유사도 계산", allPreferences.size() - 1);
 
         double targetAvgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(targetUserHistory);
         double[] targetFeatureVector = featureVectorGenerator.createUserFeatureVector(targetUserPreference, targetAvgDataUsage);
 
-        return allPreferences.stream()
+        return allPreferences.parallelStream()
                 .filter(pref -> !pref.getUserId().equals(targetUserId))
                 .map(pref -> {
-                    List<UserDataRecordResponseDto> userHistory = fetchUserHistory(pref.getUserId());
+                    try {
+                        List<UserDataRecordResponseDto> userHistory = fetchUserHistory(pref.getUserId());
+                        double userAvgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(userHistory);
+                        double[] userFeatureVector = featureVectorGenerator.createUserFeatureVector(pref, userAvgDataUsage);
+                        double similarity = similarityCalculator.calculateCosineSimilarity(targetFeatureVector, userFeatureVector);
 
-                    double userAvgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(userHistory);
-                    double[] userFeatureVector = featureVectorGenerator.createUserFeatureVector(pref, userAvgDataUsage);
+                        log.trace("대상 사용자 ID: {} 와 비교 사용자 ID: {} 의 유사도: {}", targetUserId, pref.getUserId(), similarity);
+                        return new SimilarUserResult(pref.getUserId(), similarity, pref);
 
-                    double similarity = similarityCalculator.calculateCosineSimilarity(targetFeatureVector,
-                            userFeatureVector);
-
-                    return new SimilarUserResult(pref.getUserId(), similarity, pref);
+                    } catch (Exception e) {
+                        log.error("유사도 계산 중 사용자 ID: {} 처리 오류. 해당 사용자는 유사 사용자 목록에서 제외됩니다.", pref.getUserId(), e);
+                        return null;
+                    }
                 })
+                .filter(Objects::nonNull)
                 .sorted((a, b) -> Double.compare(b.similarity, a.similarity))
                 .limit(20)
                 .toList();
