@@ -35,4 +35,23 @@ public class RestUtil {
 
         return Objects.requireNonNull(response.getBody());
     }
+
+    public <R> BaseResponseDto<R> post(
+            String url,
+            Object requestBody,
+            ParameterizedTypeReference<BaseResponseDto<R>> responseType
+    ) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Object> entity = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<BaseResponseDto<R>> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                responseType
+        );
+
+        return Objects.requireNonNull(response.getBody());
+    }
 }
