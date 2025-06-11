@@ -14,6 +14,8 @@ public class FeatureVectorGenerator {
 
     public double[] createUserFeatureVector(UserPreferenceDto pref, double avgDataUsage) {
 
+        // 데이터 단위 변환 작업 수행 필요
+
         double combinedDataUsage = pref.getPreferenceDataUsage() * WeightConstant.DATA_PREFERENCE_WEIGHT + avgDataUsage * WeightConstant.DATA_PATTERN_WEIGHT;
 
         return new double[]{

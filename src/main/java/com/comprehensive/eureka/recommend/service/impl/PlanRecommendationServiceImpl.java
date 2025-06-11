@@ -46,6 +46,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
         if (userPreference.getPreferenceDataUsage() == null && userPreference.getPreferencePrice() == null
                 && userPreference.getPreferenceSharedDataUsage() == null) {
 
+            // 사용자 나이에 맞는 요금제 중에서 비싼 요금제 3개 추천
             log.info("[추천 로직 시작] userId: {} 에 대한 사용자 선호 정보가 없어, 기본 추천 로직을 실행합니다.", userId);
             return basicRecommender.recommendPlansByAge(allPlans, userId, userAge);
 
@@ -55,7 +56,21 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
             List<PlanDto> targetPlans = planFilter.filterPlansByAge(allPlans, userAge);
             List<UserDataRecordResponseDto> userDataHistory = fetchUserDataRecords(userId);
 
+            // 1번 사용자 통신성향과 나이에 맞는 요금제 유사도
+            // 디비에 저장되어 있는 사용자 통신성향을 추출
+            // 추천을 원하는 사용자의 인원의 나이를 통해 특정 요금제를 추출
+            // 통신 성향과 > (정규화) 요금제를 비교 해서 추천
             List<RecommendationDto> userPlanSimilarityResults = userPlanSimilarRecommender.recommendByUserPlanSimilarity(userPreference, userDataHistory, targetPlans);
+
+            // 2번 사용자간 유사도
+            // 나의 통신 성향과 다른 사람들의 통신 성향을 비교
+            // 유사한 성향을 가진 유저를 찾아서 해당 유저가 어떤 요금제를 사용하는지 판단
+            // 해당 요금제 추천
+
+            // 3번 사용자 통신 성향에 가중치 부여 후 점수 계산
+            // 디비에서 사용자 통신성향 추출 -> 통신 섷향의 각 필드에 가중치 부여
+            // 통신성향의 각 필드와 요금제의 각 필드를 비교하면서 점수 부여
+            // 가중치가 높은 필드에 대해서는 점수 부여를 더 크게 함
 
             return null;
         }
