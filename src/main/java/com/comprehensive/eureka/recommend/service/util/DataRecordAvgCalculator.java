@@ -2,9 +2,11 @@ package com.comprehensive.eureka.recommend.service.util;
 
 import com.comprehensive.eureka.recommend.dto.response.UserDataRecordResponseDto;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DataRecordAvgCalculator {
 
     public double calculateAverageDataUsage(List<UserDataRecordResponseDto> records) {
@@ -12,7 +14,11 @@ public class DataRecordAvgCalculator {
 
         return records.stream()
                 .limit(6)
-                .mapToDouble(record -> record.getDataUsage().doubleValue())
+                .mapToDouble(record -> {
+                    int dataUsage = record.getDataUsage();
+                    String unit = record.getDataUsageUnit();
+                    return UnitConverter.convertToGigabytes(dataUsage, unit);
+                })
                 .average()
                 .orElse(0.0);
     }
