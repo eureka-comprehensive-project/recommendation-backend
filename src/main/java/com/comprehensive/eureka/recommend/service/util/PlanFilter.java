@@ -25,7 +25,7 @@ public class PlanFilter {
         }
 
         return allPlans.stream()
-                .filter(plan -> targetCategories.contains(plan.getCategory()))
+                .filter(plan -> targetCategories.contains(plan.getPlanCategory()))
                 .toList();
     }
 }

@@ -31,7 +31,7 @@ public class FeatureVectorGenerator {
 
         return new double[] {
                 normalizer.normalizeDataUsage(planDataAllowance),
-                normalizer.normalizePrice(plan.getPrice()),
+                normalizer.normalizePrice(plan.getMonthlyFee()),
                 normalizer.normalizeSharedDataUsage(plan.getSharedDataAllowance()),
         };
     }

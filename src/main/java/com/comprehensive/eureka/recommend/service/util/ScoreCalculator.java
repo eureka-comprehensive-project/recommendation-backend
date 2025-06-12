@@ -49,9 +49,9 @@ public class ScoreCalculator {
     }
 
     private double getPriceScore(UserPreferenceDto userPref, PlanDto plan) {
-        if (userPref.getPreferencePrice() == null || plan.getPrice() == null) return 0.0;
+        if (userPref.getPreferencePrice() == null || plan.getMonthlyFee() == null) return 0.0;
 
-        double score = scoringRule.calculatePriceScore(userPref.getPreferencePrice(), plan.getPrice());
+        double score = scoringRule.calculatePriceScore(userPref.getPreferencePrice(), plan.getMonthlyFee());
         return score * WeightConstant.PREFERENCE_PRICE_WEIGHT;
     }
 
@@ -83,13 +83,13 @@ public class ScoreCalculator {
     }
 
     private double getValueAddedCallScore(UserPreferenceDto userPref, PlanDto plan) {
-        if (userPref.getPreferenceValueAddedCallUsage() == null || plan.getValueAddedCallAmount() == null) {
+        if (userPref.getPreferenceValueAddedCallUsage() == null || plan.getAdditionalCallAllowance() == null) {
             return 0.0;
         }
 
         double score = scoringRule.calculateValueAddedCallScore(
                 userPref.getPreferenceValueAddedCallUsage(),
-                plan.getValueAddedCallAmount()
+                plan.getAdditionalCallAllowance()
         );
         return score * WeightConstant.PREFERENCE_VALUE_ADDED_CALL_WEIGHT;
     }
