@@ -12,7 +12,9 @@ import com.comprehensive.eureka.recommend.service.PlanRecommendationService;
 import com.comprehensive.eureka.recommend.service.engine.BasicRecommender;
 import com.comprehensive.eureka.recommend.service.engine.UserPlanSimilarRecommender;
 import com.comprehensive.eureka.recommend.service.engine.UserSimilarRecommender;
+import com.comprehensive.eureka.recommend.service.engine.WeightRecommender;
 import com.comprehensive.eureka.recommend.service.util.PlanFilter;
+import com.comprehensive.eureka.recommend.service.util.RecommendationCombineAndRanker;
 import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import com.comprehensive.eureka.recommend.util.api.UserApiServiceClient;
 import java.time.LocalDate;
@@ -36,6 +38,8 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     private final BasicRecommender basicRecommender;
     private final UserPlanSimilarRecommender userPlanSimilarRecommender;
     private final UserSimilarRecommender userSimilarRecommender;
+    private final WeightRecommender weightRecommender;
+    private final RecommendationCombineAndRanker recommendationCombineAndRanker;
 
     private final PlanFilter planFilter;
 
@@ -74,8 +78,14 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
             // 디비에서 사용자 통신성향 추출 -> 통신 섷향의 각 필드에 가중치 부여
             // 통신성향의 각 필드와 요금제의 각 필드를 비교하면서 점수 부여
             // 가중치가 높은 필드에 대해서는 점수 부여를 더 크게 함
+            List<RecommendationDto> weightedResults = weightRecommender.recommendByWeightScore(userPreference, targetPlans, userDataHistory);
 
-            return null;
+
+            return recommendationCombineAndRanker.combineAndRankRecommendations(
+                    userPlanSimilarityResults,
+                    userSimilarityResults,
+                    weightedResults
+            );
         }
     }
 
