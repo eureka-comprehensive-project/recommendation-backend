@@ -26,8 +26,8 @@ public class BasicRecommender {
             String keyword = getKeywordForAge(age);
 
             return allPlans.stream()
-                    .filter(p -> p.getCategory().contains(keyword))
-                    .sorted(Comparator.comparing(PlanDto::getPrice).reversed())
+                    .filter(p -> p.getPlanCategory().contains(keyword))
+                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .map(p -> {
                         return RecommendationDto.builder()

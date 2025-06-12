@@ -9,6 +9,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -18,6 +19,7 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
     private final UserPreferenceRepository userPreferenceRepository;
 
     @Override
+    @Transactional
     public void updateUserPreference(Long userId, UserPreferenceDto userPreferenceDto) {
         log.info("userId: {} updateUserPreference", userId);
 
@@ -25,7 +27,7 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
 
         if (userPreferenceOptional.isEmpty()) {
             log.info("userId: {} 의 통신 성향 정보가 존재하지 않습니다. 새로 생성합니다.", userId);
-            UserPreference savedPreference = userPreferenceRepository.save(convertDtoToEntity(userPreferenceDto));
+            UserPreference savedPreference = userPreferenceRepository.save(convertDtoToEntity(userId, userPreferenceDto));
 
         } else {
             log.info("userId: {} 의 통신 성향 정보를 업데이트합니다.", userId);
@@ -45,9 +47,9 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
                 .toList();
     }
 
-    private UserPreference convertDtoToEntity(UserPreferenceDto userPreferenceDto) {
+    private UserPreference convertDtoToEntity(Long userId, UserPreferenceDto userPreferenceDto) {
         return UserPreference.builder()
-                .userId(userPreferenceDto.getUserId())
+                .userId(userId)
                 .preferredDataAllowance(userPreferenceDto.getPreferenceDataUsage())
                 .preferredDataUnit(userPreferenceDto.getPreferenceDataUsageUnit())
                 .preferredSharedDataAllowance(userPreferenceDto.getPreferenceSharedDataUsage())

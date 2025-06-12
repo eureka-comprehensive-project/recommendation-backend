@@ -50,7 +50,7 @@ public class UserPreference {
         this.preferredSharedDataUnit = dto.getPreferenceSharedDataUsageUnit();
         this.preferredPrice = dto.getPreferencePrice();
         this.preferredBenefit = dto.getPreferenceBenefit();
-        this.preferredFamilyData = dto.isPreferenceFamilData();
+        this.preferredFamilyData = dto.isPreferenceFamilyData();
         this.preferredAdditionalCallAllowance = dto.getPreferenceValueAddedCallUsage();
     }
 }

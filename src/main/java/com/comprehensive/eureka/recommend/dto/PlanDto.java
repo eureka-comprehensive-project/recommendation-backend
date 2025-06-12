@@ -8,13 +8,13 @@ import lombok.Data;
 public class PlanDto {
     private Integer planId;
     private String planName;
-    private Integer price;
+    private Integer monthlyFee;
     private Integer dataAllowance;
     private String dataAllowanceUnit;
     private Integer sharedDataAllowance;
     private String sharedDataAllowanceUnit;
     private Integer voiceCallAmount;
-    private Integer valueAddedCallAmount;
+    private Integer additionalCallAllowance;
     private boolean isFamilyDataEnabled;
-    private String category;
+    private String planCategory;
 }
