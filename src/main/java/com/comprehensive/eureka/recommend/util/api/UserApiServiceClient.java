@@ -20,7 +20,7 @@ public class UserApiServiceClient {
 
     public LocalDate getUserBirthDay(Long userId) {
         BaseResponseDto<LocalDate> response = webClientUtil.get(
-                DomainConstant.USER_DOMAIN + userId + "/birthday",
+                DomainConstant.USER_DOMAIN + DomainConstant.USER_SERVICE_KEY + userId + "/birthday",
                 new ParameterizedTypeReference<BaseResponseDto<LocalDate>>() {}
         );
 
@@ -34,7 +34,7 @@ public class UserApiServiceClient {
                 .build();
 
         BaseResponseDto<List<UserDataRecordResponseDto>> response = webClientUtil.post(
-                DomainConstant.USER_DOMAIN + "user-data-record/usage",
+                DomainConstant.USER_DOMAIN + DomainConstant.USER_SERVICE_KEY + "user-data-record/usage",
                 requestDto,
                 new ParameterizedTypeReference<BaseResponseDto<List<UserDataRecordResponseDto>>>() {}
         );
@@ -44,7 +44,7 @@ public class UserApiServiceClient {
 
     public List<UserPlanRecordResponseDto> getActiveUserPlans(List<Long> userIds) {
         BaseResponseDto<List<UserPlanRecordResponseDto>> response = webClientUtil.post(
-                DomainConstant.USER_DOMAIN + "user-plan-record/valid-contract",
+                DomainConstant.USER_DOMAIN + DomainConstant.USER_SERVICE_KEY + "user-plan-record/valid-contract",
                 userIds,
                 new ParameterizedTypeReference<BaseResponseDto<List<UserPlanRecordResponseDto>>>() {}
         );
