@@ -19,7 +19,7 @@ public class PlanApiServiceClient {
 
     public List<PlanDto> getAllPlans() {
         BaseResponseDto<List<PlanDto>> response = webClientUtil.get(
-                DomainConstant.PLAN_DOMAIN + DomainConstant.PLAN_SERVICE_KEY,
+                DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH,
                 new ParameterizedTypeReference<BaseResponseDto<List<PlanDto>>>() {}
         );
 
@@ -28,7 +28,7 @@ public class PlanApiServiceClient {
 
     public List<BenefitDto> getBenefitsByPlanId(Integer planId) {
         BaseResponseDto<List<BenefitDto>> response = webClientUtil.get(
-                DomainConstant.PLAN_DOMAIN + DomainConstant.PLAN_SERVICE_KEY + planId + "/benefits",
+                DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH + planId + "/benefits",
                 new ParameterizedTypeReference<BaseResponseDto<List<BenefitDto>>>() {}
         );
 
@@ -37,7 +37,7 @@ public class PlanApiServiceClient {
 
     public List<PlanBenefitDto> getPlanBenefitsByPlanBenefitIds(List<Long> planBenefitIds) {
         BaseResponseDto<List<PlanBenefitDto>> response = webClientUtil.post(
-                DomainConstant.PLAN_DOMAIN + DomainConstant.PLAN_SERVICE_KEY + "plan-benefit",
+                DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH + "plan-benefit",
                 planBenefitIds,
                 new ParameterizedTypeReference<BaseResponseDto<List<PlanBenefitDto>>>() {}
         );
