@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class RestUtil {
+public class WebClientUtil {
 
     private final WebClient webClient;
 
@@ -19,28 +19,20 @@ public class RestUtil {
             String url,
             ParameterizedTypeReference<BaseResponseDto<R>> responseType
     ) {
-        Mono<BaseResponseDto<R>> responseMono = webClient.get()
+        return webClient.get()
                 .uri(url)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(responseType);
-
-        return Objects.requireNonNull(responseMono.block());
+                .bodyToMono(responseType)
+                .block();
     }
 
-    public <R> BaseResponseDto<R> post(
-            String url,
-            Object requestBody,
-            ParameterizedTypeReference<BaseResponseDto<R>> responseType
-    ) {
-        Mono<BaseResponseDto<R>> responseMono = webClient.post()
+    public <T, R> BaseResponseDto<R> post(String url, T requestBody, ParameterizedTypeReference<BaseResponseDto<R>> responseType) {
+        return webClient.post()
                 .uri(url)
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .retrieve()
-                .bodyToMono(responseType);
-
-        return Objects.requireNonNull(responseMono.block());
+                .bodyToMono(responseType)
+                .block();
     }
 }

@@ -5,7 +5,7 @@ import com.comprehensive.eureka.recommend.dto.BenefitDto;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
 import com.comprehensive.eureka.recommend.dto.base.BaseResponseDto;
 import com.comprehensive.eureka.recommend.dto.PlanBenefitDto;
-import com.comprehensive.eureka.recommend.util.RestUtil;
+import com.comprehensive.eureka.recommend.util.WebClientUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PlanApiServiceClient {
 
-    private final RestUtil restUtil;
+    private final WebClientUtil webClientUtil;
 
     public List<PlanDto> getAllPlans() {
-        BaseResponseDto<List<PlanDto>> response = restUtil.get(
+        BaseResponseDto<List<PlanDto>> response = webClientUtil.get(
                 DomainConstant.PLAN_DOMAIN,
                 new ParameterizedTypeReference<BaseResponseDto<List<PlanDto>>>() {}
         );
@@ -27,7 +27,7 @@ public class PlanApiServiceClient {
     }
 
     public List<BenefitDto> getBenefitsByPlanId(Integer planId) {
-        BaseResponseDto<List<BenefitDto>> response = restUtil.get(
+        BaseResponseDto<List<BenefitDto>> response = webClientUtil.get(
                 DomainConstant.PLAN_DOMAIN + planId + "/benefits",
                 new ParameterizedTypeReference<BaseResponseDto<List<BenefitDto>>>() {}
         );
@@ -36,7 +36,7 @@ public class PlanApiServiceClient {
     }
 
     public List<PlanBenefitDto> getPlanBenefitsByPlanBenefitIds(List<Long> planBenefitIds) {
-        BaseResponseDto<List<PlanBenefitDto>> response = restUtil.post(
+        BaseResponseDto<List<PlanBenefitDto>> response = webClientUtil.post(
                 DomainConstant.PLAN_DOMAIN + "plan-benefit",
                 planBenefitIds,
                 new ParameterizedTypeReference<BaseResponseDto<List<PlanBenefitDto>>>() {}
