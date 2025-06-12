@@ -19,8 +19,10 @@ public class DomainConstant {
     public static final String RECOMMEND_DOMAIN = "http://localhost:8083";
     // 요금제 모듈 도메인
     public static final String PLAN_DOMAIN = "http://localhost:8084";
+//    public static final String PLAN_DOMAIN = "https://www.visiblego.com";
     // 사용자 모듈 도메인
     public static final String USER_DOMAIN = "http://localhost:8085";
+//    public static final String USER_DOMAIN = "https://www.visiblego.com";
     // 관리자 모듈 도메인
     public static final String ADMIN_DOMAIN = "http://localhost:8086";
     // 채팅 모듈 도메인
