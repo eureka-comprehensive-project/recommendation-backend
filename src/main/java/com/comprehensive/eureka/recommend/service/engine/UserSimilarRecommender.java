@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,7 @@ public class UserSimilarRecommender {
             Long targetUserId,
             UserPreferenceDto targetUserPreference,
             List<UserDataRecordResponseDto> targetUserHistory,
-            List<PlanDto> allPlans
+            List<PlanDto> targetPlans
     ) {
         log.info("사용자 간 유사도 기반 추천 로직 시작. 대상 사용자 ID: {}", targetUserId);
         try {
@@ -56,7 +57,7 @@ public class UserSimilarRecommender {
             }
 
             Map<Integer, Double> averagePlanScores = calculateAveragePlanScores(similarUsers);
-            List<RecommendationDto> recommendations = buildRecommendations(averagePlanScores, allPlans);
+            List<RecommendationDto> recommendations = buildRecommendations(averagePlanScores, targetPlans);
             log.info("사용자 간 유사도 기반 추천 로직 완료");
 
             return recommendations;
@@ -142,14 +143,15 @@ public class UserSimilarRecommender {
         return planScores;
     }
 
-    private List<RecommendationDto> buildRecommendations(Map<Integer, Double> averagePlanScores, List<PlanDto> allPlans) {
+    private List<RecommendationDto> buildRecommendations(Map<Integer, Double> averagePlanScores, List<PlanDto> targetPlans) {
+        Map<Integer, PlanDto> planMap = targetPlans.stream()
+                .collect(Collectors.toMap(PlanDto::getPlanId, Function.identity()));
+
         return averagePlanScores.entrySet().stream()
-                .sorted(Entry.<Integer, Double>comparingByValue().reversed())
-                .limit(5)
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
                 .map(entry -> {
-                    PlanDto plan = allPlans.stream().filter(p -> p.getPlanId().equals(entry.getKey()))
-                            .findFirst()
-                            .orElseThrow(() -> new RecommendationException(ErrorCode.PLAN_LOAD_FAILURE));
+                    PlanDto plan = planMap.get(entry.getKey());
+                    if (plan == null) return null;
 
                     return RecommendationDto.builder()
                             .plan(plan)
@@ -157,6 +159,8 @@ public class UserSimilarRecommender {
                             .recommendationType("USER_SIMILARITY")
                             .build();
                 })
+                .filter(Objects::nonNull)
+                .limit(5)
                 .collect(Collectors.toList());
     }
 
