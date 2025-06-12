@@ -21,14 +21,13 @@ public class BasicRecommender {
 
     private final UserApiServiceClient userApiServiceClient;
 
-    public List<RecommendationDto> recommendPlansByAge(List<PlanDto> allPlans, Long userId) {
+    public List<RecommendationDto> recommendPlansByAge(List<PlanDto> allPlans, Long userId, int age) {
         try {
-            int age = getUserAge(fetchUserBirthDay(userId));
             String keyword = getKeywordForAge(age);
 
             return allPlans.stream()
-                    .filter(p -> p.getCategory().contains(keyword))
-                    .sorted(Comparator.comparing(PlanDto::getPrice).reversed())
+                    .filter(p -> p.getPlanCategory().contains(keyword))
+                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .map(p -> {
                         return RecommendationDto.builder()
@@ -44,26 +43,11 @@ public class BasicRecommender {
         }
     }
 
-    private Integer getUserAge(LocalDate birthDay) {
-        LocalDate today = LocalDate.now();
-        return Period.between(birthDay, today).getYears();
-    }
-
     private String getKeywordForAge(int age) {
         if (age <= 12) return "키즈";
         if (age <= 19) return "청소년";
         if (age <= 29) return "유스";
-        if (age < 65) return "5G 일반";
+        if (age < 65) return "프리미엄";
         return "시니어";
-    }
-
-    private LocalDate fetchUserBirthDay(Long userId) {
-        try {
-            return userApiServiceClient.getUserBirthDay(userId);
-
-        } catch (Exception e) {
-            log.error("[외부 API 호출 실패] userId: {} 의 생년월일 정보 호출에 실패했습니다.", userId, e);
-            throw new RecommendationException(ErrorCode.USER_LOAD_FAILURE);
-        }
     }
 }
