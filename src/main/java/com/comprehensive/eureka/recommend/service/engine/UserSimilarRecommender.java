@@ -115,6 +115,7 @@ public class UserSimilarRecommender {
 
         List<UserPlanRecordResponseDto> activeUserPlans = fetchActiveUserPlans(userIds);
         Map<Long, Long> userToPlanBenefitMap = activeUserPlans.stream()
+                .filter(dto -> dto.getPlanBenefitId() != null)
                 .collect(Collectors.toMap(
                         UserPlanRecordResponseDto::getUserId,
                         UserPlanRecordResponseDto::getPlanBenefitId,
