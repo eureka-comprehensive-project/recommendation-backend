@@ -8,8 +8,8 @@ public class WeightConstant {
     public static final double NUMERIC_SIMILARITY_WEIGHT = 0.8;
     public static final double BENEFIT_SIMILARITY_WEIGHT = 0.2;
 
-    public static final double PREFERENCE_DATA_USAGE_WEIGHT = 0.40;
-    public static final double PREFERENCE_PRICE_WEIGHT = 0.30;
+    public static final double PREFERENCE_DATA_USAGE_WEIGHT = 0.35;
+    public static final double PREFERENCE_PRICE_WEIGHT = 0.35;
     public static final double PREFERENCE_SHARED_DATA_WEIGHT = 0.1;
     public static final double PREFERENCE_BENEFITS_WEIGHT = 0.1;
     public static final double PREFERENCE_FAMILY_DATA_WEIGHT = 0.05;
