@@ -1,7 +1,7 @@
 package com.comprehensive.eureka.recommend.service.engine;
 
 import com.comprehensive.eureka.recommend.dto.PlanDto;
-import com.comprehensive.eureka.recommend.dto.RecommendationDto;
+import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.dto.response.UserDataRecordResponseDto;
 import com.comprehensive.eureka.recommend.service.util.DataRecordAvgCalculator;
@@ -19,7 +19,7 @@ public class WeightRecommender {
     private final DataRecordAvgCalculator dataRecordAvgCalculator;
     private final ScoreCalculator scoreCalculator;
 
-    public List<RecommendationDto> recommendByWeightScore(
+    public List<RecommendPlanDto> recommendByWeightScore(
             UserPreferenceDto targetUserPreference,
             List<PlanDto> targetPlans,
             List<UserDataRecordResponseDto> targetUserHistory
@@ -31,7 +31,7 @@ public class WeightRecommender {
                     double score = scoreCalculator.calculateWeightedScore(targetUserPreference, avgDataUsage, plan);
                     log.info("요금제 ID: {}에 대한 가중치 점수: {}", plan.getPlanId(), score);
 
-                    return RecommendationDto.builder()
+                    return RecommendPlanDto.builder()
                             .plan(plan)
                             .score(score)
                             .recommendationType("WEIGHTED")

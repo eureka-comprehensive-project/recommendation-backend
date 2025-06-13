@@ -1,7 +1,7 @@
 package com.comprehensive.eureka.recommend.service.engine;
 
 import com.comprehensive.eureka.recommend.dto.PlanDto;
-import com.comprehensive.eureka.recommend.dto.RecommendationDto;
+import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.dto.PlanBenefitDto;
 import com.comprehensive.eureka.recommend.dto.response.UserDataRecordResponseDto;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class UserSimilarRecommender {
 
     private record SimilarUserResult(Long userId, double similarity, UserPreferenceDto preference) {}
 
-    public List<RecommendationDto> recommendBySimilarUsers(
+    public List<RecommendPlanDto> recommendBySimilarUsers(
             Long targetUserId,
             UserPreferenceDto targetUserPreference,
             List<UserDataRecordResponseDto> targetUserHistory,
@@ -57,7 +56,7 @@ public class UserSimilarRecommender {
             }
 
             Map<Integer, Double> averagePlanScores = calculateAveragePlanScores(similarUsers);
-            List<RecommendationDto> recommendations = buildRecommendations(averagePlanScores, targetPlans);
+            List<RecommendPlanDto> recommendations = buildRecommendations(averagePlanScores, targetPlans);
             log.info("사용자 간 유사도 기반 추천 로직 완료");
 
             return recommendations;
@@ -144,7 +143,7 @@ public class UserSimilarRecommender {
         return planScores;
     }
 
-    private List<RecommendationDto> buildRecommendations(Map<Integer, Double> averagePlanScores, List<PlanDto> targetPlans) {
+    private List<RecommendPlanDto> buildRecommendations(Map<Integer, Double> averagePlanScores, List<PlanDto> targetPlans) {
         Map<Integer, PlanDto> planMap = targetPlans.stream()
                 .collect(Collectors.toMap(PlanDto::getPlanId, Function.identity()));
 
@@ -154,7 +153,7 @@ public class UserSimilarRecommender {
                     PlanDto plan = planMap.get(entry.getKey());
                     if (plan == null) return null;
 
-                    return RecommendationDto.builder()
+                    return RecommendPlanDto.builder()
                             .plan(plan)
                             .score(entry.getValue())
                             .recommendationType("USER_SIMILARITY")
