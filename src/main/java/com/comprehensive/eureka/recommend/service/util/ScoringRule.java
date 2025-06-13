@@ -1,6 +1,5 @@
 package com.comprehensive.eureka.recommend.service.util;
 
-import com.comprehensive.eureka.recommend.constant.DomainConstant;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
 import java.util.List;
@@ -16,7 +15,11 @@ public class ScoringRule {
         if (actualAvgData == 0.0) targetUsage = preferenceValue;
         else targetUsage = (preferenceValue * WeightConstant.DATA_PREFERENCE_WEIGHT) + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
 
-        double effectivePlanData = (planDataLimit == null || planDataLimit == 0) ? 10000.0 : planDataLimit.doubleValue();
+        boolean isUnlimited = (planDataLimit == 0);
+
+        if (isUnlimited && targetUsage >= 150) return 1.0;
+
+        double effectivePlanData = isUnlimited ? 10000.0 : planDataLimit.doubleValue();
 
         if (effectivePlanData < targetUsage) {
             double ratio = effectivePlanData / targetUsage;

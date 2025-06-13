@@ -11,8 +11,8 @@ public class PlanDto {
     private Integer monthlyFee;
     private Integer dataAllowance;
     private String dataAllowanceUnit;
-    private Integer sharedDataAllowance;
-    private String sharedDataAllowanceUnit;
+    private Integer tetheringDataAmount;
+    private String tetheringDataUnit;
     private Integer voiceCallAmount;
     private Integer additionalCallAllowance;
     private boolean isFamilyDataEnabled;
