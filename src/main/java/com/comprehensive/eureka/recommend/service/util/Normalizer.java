@@ -8,7 +8,6 @@ public class Normalizer {
 
     public double normalizeDataUsage(Double dataUsage) {
         if (dataUsage == null) return 0.0;
-        if (dataUsage == 0) return 1.0;
 
         return (dataUsage - RangeConstant.MIN_PLAN_DATA) / (RangeConstant.MAX_PLAN_DATA - RangeConstant.MIN_PLAN_DATA);
     }

@@ -16,10 +16,12 @@ public class FeatureVectorGenerator {
 
         double preferenceDataUsage = UnitConverter.convertToGigabytes(pref.getPreferenceDataUsage(), pref.getPreferenceDataUsageUnit());
 
-        double combinedDataUsage = preferenceDataUsage * WeightConstant.DATA_PREFERENCE_WEIGHT + avgDataUsage * WeightConstant.DATA_PATTERN_WEIGHT;
+        double targetUsage = 0.0;
+        if (avgDataUsage == 0.0) targetUsage = preferenceDataUsage;
+        else targetUsage = (preferenceDataUsage * WeightConstant.DATA_PREFERENCE_WEIGHT) + (avgDataUsage * WeightConstant.DATA_PATTERN_WEIGHT);
 
         return new double[]{
-                normalizer.normalizeDataUsage(combinedDataUsage),
+                normalizer.normalizeDataUsage(targetUsage),
                 normalizer.normalizePrice(pref.getPreferencePrice()),
                 normalizer.normalizeSharedDataUsage(pref.getPreferenceSharedDataUsage())
         };

@@ -1,5 +1,6 @@
 package com.comprehensive.eureka.recommend.service.util;
 
+import com.comprehensive.eureka.recommend.constant.DomainConstant;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
 import java.util.List;
@@ -9,21 +10,24 @@ import org.springframework.stereotype.Component;
 public class ScoringRule {
 
     public double calculateDataScore(Integer preferredData, double actualAvgData, Integer planDataLimit) {
-        double combinedUsage = (preferredData.doubleValue() * WeightConstant.DATA_PREFERENCE_WEIGHT)
-                + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
+        double targetUsage = 0.0;
+        double preferenceValue = (preferredData == null || preferredData == 0) ? 150.0 : preferredData.doubleValue();
 
-        if (preferredData == 0) {
-            combinedUsage = (150.0 * WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT)
-                    + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
+        if (actualAvgData == 0.0) targetUsage = preferenceValue;
+        else targetUsage = (preferenceValue * WeightConstant.DATA_PREFERENCE_WEIGHT) + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
+
+        double effectivePlanData = (planDataLimit == null || planDataLimit == 0) ? 10000.0 : planDataLimit.doubleValue();
+
+        if (effectivePlanData < targetUsage) {
+            double ratio = effectivePlanData / targetUsage;
+            return Math.pow(ratio, 5.0);
+
+        } else {
+            double absurdityLimit = targetUsage * 1.5;
+
+            if (effectivePlanData > absurdityLimit) return absurdityLimit / effectivePlanData;
+            else return 1.0;
         }
-
-        if (planDataLimit == 0) return combinedUsage >= 100 ? 1.0 : 0.6;
-
-        double ratio = combinedUsage / planDataLimit.doubleValue();
-
-        if (ratio <= 0.8) return 1.0 - Math.abs(0.6 - ratio);
-        else if (ratio <= 1.0) return 0.7;
-        else return Math.max(0.1, 1.0 / ratio);
     }
 
     public double calculatePriceScore(Integer preferredPrice, Integer planPrice) {

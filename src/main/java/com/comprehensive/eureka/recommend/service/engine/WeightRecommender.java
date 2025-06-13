@@ -8,8 +8,10 @@ import com.comprehensive.eureka.recommend.service.util.DataRecordAvgCalculator;
 import com.comprehensive.eureka.recommend.service.util.ScoreCalculator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WeightRecommender {
@@ -27,6 +29,7 @@ public class WeightRecommender {
         return targetPlans.stream()
                 .map(plan ->{
                     double score = scoreCalculator.calculateWeightedScore(targetUserPreference, avgDataUsage, plan);
+                    log.info("요금제 ID: {}에 대한 가중치 점수: {}", plan.getPlanId(), score);
 
                     return RecommendationDto.builder()
                             .plan(plan)
