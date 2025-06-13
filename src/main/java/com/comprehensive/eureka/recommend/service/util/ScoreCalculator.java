@@ -31,6 +31,16 @@ public class ScoreCalculator {
         return score;
     }
 
+    public double calculateSufficiencyScore(PlanDto plan, UserPreferenceDto userPreference) {
+        double planData = plan.getDataAllowance();
+        double userPrefData = userPreference.getPreferenceDataUsage();
+
+        boolean isSufficient = (planData == 0) || (planData >= userPrefData);
+
+        if (isSufficient) return 1.0;
+        else return (planData / userPrefData) - 0.2;
+    }
+
     private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
         if (userPref.getPreferenceDataUsage() == null || plan.getDataAllowance() == null) return 0.0;
 

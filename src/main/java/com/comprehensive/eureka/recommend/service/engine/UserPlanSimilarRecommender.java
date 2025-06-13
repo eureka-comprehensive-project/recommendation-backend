@@ -10,6 +10,7 @@ import com.comprehensive.eureka.recommend.exception.ErrorCode;
 import com.comprehensive.eureka.recommend.exception.RecommendationException;
 import com.comprehensive.eureka.recommend.service.util.DataRecordAvgCalculator;
 import com.comprehensive.eureka.recommend.service.util.FeatureVectorGenerator;
+import com.comprehensive.eureka.recommend.service.util.ScoreCalculator;
 import com.comprehensive.eureka.recommend.service.util.SimilarityCalculator;
 import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import java.util.List;
@@ -29,6 +30,7 @@ public class UserPlanSimilarRecommender {
     private final DataRecordAvgCalculator dataRecordAvgCalculator;
     private final FeatureVectorGenerator featureVectorGenerator;
     private final SimilarityCalculator similarityCalculator;
+    private final ScoreCalculator scoreCalculator;
 
     private record UserPlanSimilarityResult(PlanDto plan, double similarity) {}
 
@@ -45,15 +47,17 @@ public class UserPlanSimilarRecommender {
             List<RecommendationDto> recommendations = targetPlans.parallelStream()
                     .map(plan -> {
                         try {
-                            log.debug("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
+                            log.info("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
                             List<BenefitDto> targetPlanBenefits = fetchPlanBenefits(plan.getPlanId());
                             double[] planVector = featureVectorGenerator.createPlanFeatureVector(plan);
 
                             double numericSimilarity = similarityCalculator.calculateCosineSimilarity(targetUserVector, planVector);
                             double benefitSimilarity = similarityCalculator.calculateUserPlanBenefitSimilarity(targetUserPreference.getPreferenceBenefit(), targetPlanBenefits);
+                            double sufficiencyScore = scoreCalculator.calculateSufficiencyScore(plan, targetUserPreference);
 
-                            double finalSimilarity = (numericSimilarity * WeightConstant.NUMERIC_SIMILARITY_WEIGHT) + (benefitSimilarity * WeightConstant.BENEFIT_SIMILARITY_WEIGHT);
-                            log.debug("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
+                            double baseSimilarity = (numericSimilarity * WeightConstant.NUMERIC_SIMILARITY_WEIGHT) + (benefitSimilarity * WeightConstant.BENEFIT_SIMILARITY_WEIGHT);
+                            double finalSimilarity = baseSimilarity * sufficiencyScore;
+                            log.info("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
 
                             return new UserPlanSimilarityResult(plan, finalSimilarity);
 
