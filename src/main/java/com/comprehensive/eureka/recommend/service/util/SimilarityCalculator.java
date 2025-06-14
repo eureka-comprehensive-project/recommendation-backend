@@ -23,6 +23,15 @@ public class SimilarityCalculator {
         return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
     }
 
+    public double calculateEuclideanSimilarity(double[] vector1, double[] vector2) {
+        double distance = 0.0;
+        for (int i = 0; i < vector1.length; i++) {
+            distance += Math.pow(vector1[i] - vector2[i], 2);
+        }
+        distance = Math.sqrt(distance);
+        return 1.0 / (1.0 + distance);
+    }
+
     public double calculateUserPlanBenefitSimilarity(String userBenefit, List<BenefitDto> planBenefits) {
         if (userBenefit == null || planBenefits == null || planBenefits.isEmpty()) {
             return 0.0;
