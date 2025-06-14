@@ -51,8 +51,8 @@ public class UserPlanSimilarRecommender {
                             List<BenefitDto> targetPlanBenefits = fetchPlanBenefits(plan.getPlanId());
                             double[] planVector = featureVectorGenerator.createPlanFeatureVector(plan);
 
-                            double numericSimilarity = similarityCalculator.calculateCosineSimilarity(targetUserVector, planVector);
-                            double benefitSimilarity = similarityCalculator.calculateUserPlanBenefitSimilarity(targetUserPreference.getPreferenceBenefit(), targetPlanBenefits);
+                            double numericSimilarity = similarityCalculator.calculateEuclideanSimilarity(targetUserVector, planVector);
+                            double benefitSimilarity = similarityCalculator.calculateUserPlanBenefitSimilarity(targetUserPreference.getPreferenceBenefitGroupId(), plan);
                             double sufficiencyScore = scoreCalculator.calculateSufficiencyScore(plan, targetUserPreference);
 
                             double baseSimilarity = (numericSimilarity * WeightConstant.NUMERIC_SIMILARITY_WEIGHT) + (benefitSimilarity * WeightConstant.BENEFIT_SIMILARITY_WEIGHT);

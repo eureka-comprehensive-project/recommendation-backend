@@ -32,20 +32,32 @@ public class ScoreCalculator {
     }
 
     public double calculateSufficiencyScore(PlanDto plan, UserPreferenceDto userPreference) {
+        double preferenceData = UnitConverter.convertToGigabytes(
+                userPreference.getPreferenceDataUsage(),
+                userPreference.getPreferenceDataUsageUnit()
+        );
+
         double planData = UnitConverter.convertToGigabytes(
                 plan.getDataAllowance(),
                 plan.getDataAllowanceUnit(),
                 plan.getDataPeriod()
         );
-        double userPrefData = UnitConverter.convertToGigabytes(
-                userPreference.getPreferenceDataUsage(),
-                userPreference.getPreferenceDataUsageUnit()
-        );
 
-        boolean isSufficient = (planData == 0) || (planData >= userPrefData);
+        if (planData < (preferenceData * 0.95)) return 0.3;
 
-        if (isSufficient) return 1.0;
-        else return (planData / userPrefData) - 0.2;
+        double dataDiff = planData - preferenceData;
+        double dataScore = Math.exp(-0.01 * dataDiff);
+
+        double preferencePrice = userPreference.getPreferencePrice().doubleValue();
+        double planPrice = plan.getMonthlyFee().doubleValue();
+
+        double priceScore = 1.0;
+        if (planPrice > preferencePrice) {
+            double priceDiffRatio = (planPrice - preferencePrice) / preferencePrice;
+            priceScore = Math.exp(-1.5 * priceDiffRatio);
+        }
+
+        return (dataScore * 0.6) + (priceScore * 0.4);
     }
 
     private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
@@ -93,10 +105,10 @@ public class ScoreCalculator {
     }
 
     private double getBenefitScore(UserPreferenceDto userPref, PlanDto plan) {
-        if (userPref.getPreferenceBenefit() == null) {
+        if (userPref.getPreferenceBenefitGroupId() == null) {
             return 0.0;
         }
-        double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefit(), fetchPlanBenefits(plan.getPlanId()));
+        double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefitGroupId(), plan);
         return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
     }
 

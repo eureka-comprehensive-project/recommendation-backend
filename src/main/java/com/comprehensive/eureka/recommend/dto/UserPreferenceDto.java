@@ -13,7 +13,7 @@ public class UserPreferenceDto {
     private Integer preferenceSharedDataUsage;
     private String preferenceSharedDataUsageUnit;
     private Integer preferencePrice;
-    private String preferenceBenefit;
+    private Long preferenceBenefitGroupId;
     private boolean isPreferenceFamilyData;
     private Integer preferenceValueAddedCallUsage;
 }
