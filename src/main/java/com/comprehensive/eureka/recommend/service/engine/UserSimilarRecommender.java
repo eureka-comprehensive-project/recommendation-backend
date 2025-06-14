@@ -88,7 +88,7 @@ public class UserSimilarRecommender {
                         List<UserDataRecordResponseDto> userHistory = fetchUserHistory(pref.getUserId());
                         double userAvgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(userHistory);
                         double[] userFeatureVector = featureVectorGenerator.createUserFeatureVector(pref, userAvgDataUsage);
-                        double similarity = similarityCalculator.calculateCosineSimilarity(targetFeatureVector, userFeatureVector);
+                        double similarity = similarityCalculator.calculateEuclideanSimilarity(targetFeatureVector, userFeatureVector);
 
                         log.trace("대상 사용자 ID: {} 와 비교 사용자 ID: {} 의 유사도: {}", targetUserId, pref.getUserId(), similarity);
                         return new SimilarUserResult(pref.getUserId(), similarity, pref);
