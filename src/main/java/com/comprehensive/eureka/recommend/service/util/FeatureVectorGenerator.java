@@ -29,7 +29,7 @@ public class FeatureVectorGenerator {
 
     public double[] createPlanFeatureVector(PlanDto plan) {
 
-        double planDataAllowance = UnitConverter.convertToGigabytes(plan.getDataAllowance(), plan.getDataAllowanceUnit());
+        double planDataAllowance = UnitConverter.convertToGigabytes(plan.getDataAllowance(), plan.getDataAllowanceUnit(), plan.getDataPeriod());
 
         return new double[] {
                 normalizer.normalizeDataUsage(planDataAllowance),

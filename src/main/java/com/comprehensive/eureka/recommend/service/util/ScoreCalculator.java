@@ -32,8 +32,15 @@ public class ScoreCalculator {
     }
 
     public double calculateSufficiencyScore(PlanDto plan, UserPreferenceDto userPreference) {
-        double planData = plan.getDataAllowance();
-        double userPrefData = userPreference.getPreferenceDataUsage();
+        double planData = UnitConverter.convertToGigabytes(
+                plan.getDataAllowance(),
+                plan.getDataAllowanceUnit(),
+                plan.getDataPeriod()
+        );
+        double userPrefData = UnitConverter.convertToGigabytes(
+                userPreference.getPreferenceDataUsage(),
+                userPreference.getPreferenceDataUsageUnit()
+        );
 
         boolean isSufficient = (planData == 0) || (planData >= userPrefData);
 
@@ -51,7 +58,8 @@ public class ScoreCalculator {
 
         int planData = UnitConverter.convertToGigabytes(
                 plan.getDataAllowance(),
-                plan.getDataAllowanceUnit()
+                plan.getDataAllowanceUnit(),
+                plan.getDataPeriod()
         );
 
         double score = scoringRule.calculateDataScore(preferredData, avgDataUsage, planData);
