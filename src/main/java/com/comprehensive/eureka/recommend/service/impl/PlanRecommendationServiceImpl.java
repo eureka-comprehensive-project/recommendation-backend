@@ -53,8 +53,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
         int userAge = getUserAge(fetchUserBirthDay(userId));
         double avgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(fetchUserDataRecords(userId));
 
-        if (userPreference.getPreferenceDataUsage() == null && userPreference.getPreferencePrice() == null
-                && userPreference.getPreferenceSharedDataUsage() == null) {
+        if (userPreference.getPreferenceDataUsage() == null && userPreference.getPreferencePrice() == null) {
 
             // 사용자 나이에 맞는 요금제 중에서 비싼 요금제 3개 추천
             log.info("[추천 로직 시작] userId: {} 에 대한 사용자 선호 정보가 없어, 기본 추천 로직을 실행합니다.", userId);
