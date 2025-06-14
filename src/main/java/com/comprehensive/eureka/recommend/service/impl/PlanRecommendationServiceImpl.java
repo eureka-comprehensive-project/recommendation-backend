@@ -85,9 +85,9 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
 
 
             return recommendationCombineAndRanker.combineAndRankRecommendations(
-                    userPlanSimilarityResults,
                     userSimilarityResults,
                     weightedResults,
+                    userPlanSimilarityResults,
                     userPreference,
                     avgDataUsage
             );
