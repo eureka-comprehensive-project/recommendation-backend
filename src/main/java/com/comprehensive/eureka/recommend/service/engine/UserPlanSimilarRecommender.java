@@ -47,7 +47,7 @@ public class UserPlanSimilarRecommender {
             List<RecommendPlanDto> recommendations = targetPlans.parallelStream()
                     .map(plan -> {
                         try {
-                            log.info("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
+                            log.debug("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
                             List<BenefitDto> targetPlanBenefits = fetchPlanBenefits(plan.getPlanId());
                             double[] planVector = featureVectorGenerator.createPlanFeatureVector(plan);
 
@@ -57,7 +57,7 @@ public class UserPlanSimilarRecommender {
 
                             double baseSimilarity = (numericSimilarity * WeightConstant.NUMERIC_SIMILARITY_WEIGHT) + (benefitSimilarity * WeightConstant.BENEFIT_SIMILARITY_WEIGHT);
                             double finalSimilarity = baseSimilarity * sufficiencyScore;
-                            log.info("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
+                            log.debug("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
 
                             return new UserPlanSimilarityResult(plan, finalSimilarity);
 
