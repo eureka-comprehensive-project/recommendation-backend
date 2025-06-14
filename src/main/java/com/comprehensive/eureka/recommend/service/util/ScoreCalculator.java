@@ -105,10 +105,10 @@ public class ScoreCalculator {
     }
 
     private double getBenefitScore(UserPreferenceDto userPref, PlanDto plan) {
-        if (userPref.getPreferenceBenefit() == null) {
+        if (userPref.getPreferenceBenefitGroupId() == null) {
             return 0.0;
         }
-        double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefit(), fetchPlanBenefits(plan.getPlanId()));
+        double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefitGroupId(), plan);
         return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
     }
 

@@ -44,4 +44,13 @@ public class PlanApiServiceClient {
 
         return response.getData();
     }
+
+    public Boolean isPlanHasBenefitGroupId(Integer planId, Long benefitGroupId) {
+        BaseResponseDto<Boolean> response = webClientUtil.get(
+                DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH + planId + "/benefit-group/" + benefitGroupId + "/exists",
+                new ParameterizedTypeReference<BaseResponseDto<Boolean>>() {}
+        );
+
+        return response.getData();
+    }
 }

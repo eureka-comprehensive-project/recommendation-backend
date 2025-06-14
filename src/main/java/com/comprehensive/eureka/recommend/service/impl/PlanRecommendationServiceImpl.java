@@ -152,7 +152,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
                 .preferenceSharedDataUsage(userPreference.getPreferredSharedDataAllowance())
                 .preferenceSharedDataUsageUnit(userPreference.getPreferredSharedDataUnit())
                 .preferencePrice(userPreference.getPreferredPrice())
-                .preferenceBenefit(userPreference.getPreferredBenefit())
+                .preferenceBenefitGroupId(userPreference.getPreferredBenefitGroupId())
                 .isPreferenceFamilyData(userPreference.isPreferredFamilyData())
                 .preferenceValueAddedCallUsage(userPreference.getPreferredAdditionalCallAllowance())
                 .build();

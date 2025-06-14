@@ -37,7 +37,7 @@ public class UserPreference {
 
     private Integer preferredPrice;
 
-    private String preferredBenefit;
+    private Long preferredBenefitGroupId;
 
     private boolean preferredFamilyData;
 
@@ -49,7 +49,7 @@ public class UserPreference {
         this.preferredSharedDataAllowance = dto.getPreferenceSharedDataUsage();
         this.preferredSharedDataUnit = dto.getPreferenceSharedDataUsageUnit();
         this.preferredPrice = dto.getPreferencePrice();
-        this.preferredBenefit = dto.getPreferenceBenefit();
+        this.preferredBenefitGroupId = dto.getPreferenceBenefitGroupId();
         this.preferredFamilyData = dto.isPreferenceFamilyData();
         this.preferredAdditionalCallAllowance = dto.getPreferenceValueAddedCallUsage();
     }
