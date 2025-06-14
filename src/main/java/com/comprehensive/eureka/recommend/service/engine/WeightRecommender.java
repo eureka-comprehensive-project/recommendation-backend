@@ -29,7 +29,7 @@ public class WeightRecommender {
         return targetPlans.stream()
                 .map(plan ->{
                     double score = scoreCalculator.calculateWeightedScore(targetUserPreference, avgDataUsage, plan);
-                    log.info("요금제 ID: {}에 대한 가중치 점수: {}", plan.getPlanId(), score);
+                    log.debug("요금제 ID: {}에 대한 가중치 점수: {}", plan.getPlanId(), score);
 
                     return RecommendPlanDto.builder()
                             .plan(plan)

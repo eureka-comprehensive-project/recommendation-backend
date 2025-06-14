@@ -31,6 +31,6 @@ public class SimilarityCalculator {
         boolean isMatch = planBenefits.stream()
                 .anyMatch(benefitDto -> userBenefit.equals(benefitDto.getBenefitName()));
 
-        return isMatch ? 1.0 : 0.0;
+        return isMatch ? 1.0 : 0.5;
     }
 }

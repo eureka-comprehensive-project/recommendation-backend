@@ -12,6 +12,7 @@ import com.comprehensive.eureka.recommend.util.api.UserApiServiceClient;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,21 +34,33 @@ public class BasicRecommender {
         try {
             String keyword = getKeywordForAge(age);
 
-            List<RecommendPlanDto> recommendPlans =  allPlans.stream()
+            List<PlanDto> ageSpecificPlans = allPlans.stream()
                     .filter(p -> p.getPlanCategory().contains(keyword))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
+                    .limit(1)
+                    .toList();
+
+            List<PlanDto> premiumPlans = allPlans.stream()
+                    .filter(p -> p.getPlanCategory().contains("프리미엄"))
+                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
+                    .limit(2)
+                    .toList();
+
+            List<PlanDto> combinedPlans = Stream.concat(ageSpecificPlans.stream(), premiumPlans.stream())
+                    .distinct()
                     .limit(3)
-                    .map(p -> {
-                        return RecommendPlanDto.builder()
-                                .plan(p)
-                                .recommendationType("AGE")
-                                .build();
-                    })
+                    .toList();
+
+            List<RecommendPlanDto> recommendPlans = combinedPlans.stream()
+                    .map(p -> RecommendPlanDto.builder()
+                            .plan(p)
+                            .recommendationType("AGE")
+                            .build())
                     .peek(recommendPlanDto -> {
                         List<BenefitDto> benefits = fetchBenefitsByPlanId(recommendPlanDto.getPlan().getPlanId());
                         recommendPlanDto.setBenefits(benefits);
                     })
-                    .toList();
+                    .collect(Collectors.toList());
 
             return RecommendationResponseDto.builder()
                     .userPreference(userPreference)
