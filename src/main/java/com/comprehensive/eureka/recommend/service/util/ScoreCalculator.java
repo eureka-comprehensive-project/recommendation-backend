@@ -51,12 +51,12 @@ public class ScoreCalculator {
     private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
         if (userPref.getPreferenceDataUsage() == null || plan.getDataAllowance() == null) return 0.0;
 
-        int preferredData = UnitConverter.convertToGigabytes(
+        double preferredData = UnitConverter.convertToGigabytes(
                 userPref.getPreferenceDataUsage(),
                 userPref.getPreferenceDataUsageUnit()
         );
 
-        int planData = UnitConverter.convertToGigabytes(
+        double planData = UnitConverter.convertToGigabytes(
                 plan.getDataAllowance(),
                 plan.getDataAllowanceUnit(),
                 plan.getDataPeriod()
@@ -78,12 +78,12 @@ public class ScoreCalculator {
             return 0.0;
         }
 
-        int preferredShared = UnitConverter.convertToGigabytes(
+        double preferredShared = UnitConverter.convertToGigabytes(
                 userPref.getPreferenceSharedDataUsage(),
                 userPref.getPreferenceSharedDataUsageUnit()
         );
 
-        int planShared = UnitConverter.convertToGigabytes(
+        double planShared = UnitConverter.convertToGigabytes(
                 plan.getTetheringDataAmount(),
                 plan.getTetheringDataUnit()
         );
