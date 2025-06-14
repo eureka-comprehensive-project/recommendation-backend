@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 public class UnitConverter {
 
     public static Double convertToGigabytes(Integer value, String unit) {
+        if (value == null) return 0.0;
+
         return (double) switch (unit) {
             case "MB" -> value / 1024.0;
             case "GB" -> (double) value;
@@ -16,6 +18,7 @@ public class UnitConverter {
     }
 
     public static Double convertToGigabytes(Integer value, String unit, DataPeriod dataPeriod) {
+        if (value == null) return 0.0;
         if (dataPeriod == DataPeriod.DAY) value *= 30;
 
         return (double) switch (unit) {
