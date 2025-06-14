@@ -1,29 +1,40 @@
 package com.comprehensive.eureka.recommend.service.util;
 
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
-import com.comprehensive.eureka.recommend.dto.RecommendationDto;
+import com.comprehensive.eureka.recommend.dto.BenefitDto;
+import com.comprehensive.eureka.recommend.dto.PlanDto;
+import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
+import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
+import com.comprehensive.eureka.recommend.dto.response.RecommendationResponseDto;
 import com.comprehensive.eureka.recommend.exception.ErrorCode;
 import com.comprehensive.eureka.recommend.exception.RecommendationException;
+import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RecommendationCombineAndRanker {
 
-    public List<RecommendationDto> combineAndRankRecommendations(
-            List<RecommendationDto> userSimilarityResults,
-            List<RecommendationDto> weightedResults,
-            List<RecommendationDto> directSimilarityResults
+    private final PlanApiServiceClient planApiServiceClient;
+
+    public RecommendationResponseDto combineAndRankRecommendations(
+            List<RecommendPlanDto> userSimilarityResults,
+            List<RecommendPlanDto> weightedResults,
+            List<RecommendPlanDto> directSimilarityResults,
+            UserPreferenceDto userPreference,
+            double avgDataUsage
     ) {
         log.info("추천 결과 조합 및 최종 추천 결과 생성 시작");
 
         try {
-            Map<Integer, RecommendationDto> combinedResults = new HashMap<>();
+            Map<Integer, RecommendPlanDto> combinedResults = new HashMap<>();
 
             userSimilarityResults.forEach(result -> {
                 result.setScore(result.getScore() * WeightConstant.USER_SIMILARITY_SCORE_WEIGHT);
@@ -55,17 +66,35 @@ public class RecommendationCombineAndRanker {
             });
             log.debug("사용자 - 요금제 간 유사도 기반 추천 결과 처리");
 
-            List<RecommendationDto> finalRecommendations = combinedResults.values().stream()
+            List<RecommendPlanDto> finalRecommendations = combinedResults.values().stream()
                     .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                     .limit(3)
+                    .peek(recommendPlanDto -> {
+                        List<BenefitDto> benefits = fetchBenefitsByPlanId(recommendPlanDto.getPlan().getPlanId());
+                        recommendPlanDto.setBenefits(benefits);
+                    })
                     .collect(Collectors.toList());
 
             log.info("추천 결과 조합 및 최종 결과 생성 완료");
-            return finalRecommendations;
+            return RecommendationResponseDto.builder()
+                    .userPreference(userPreference)
+                    .avgDataUsage(avgDataUsage)
+                    .recommendPlans(finalRecommendations)
+                    .build();
 
         } catch (Exception e) {
             log.error("추천 결과 조합 및 최종 결과 생성 중 오류가 발생했습니다.", e);
             throw new RecommendationException(ErrorCode.COMBINE_AND_RANK_RECOMMENDATION_FAILURE);
+        }
+    }
+
+    private List<BenefitDto> fetchBenefitsByPlanId(Integer planId) {
+        try {
+            return planApiServiceClient.getBenefitsByPlanId(planId);
+
+        } catch (Exception e) {
+            log.error("[외부 API 호출 실패] 요금제 혜택 정보 호출에 실패했습니다.", e);
+            throw new RecommendationException(ErrorCode.PLAN_BENEFIT_LOAD_FAILURE);
         }
     }
 }

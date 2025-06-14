@@ -32,8 +32,15 @@ public class ScoreCalculator {
     }
 
     public double calculateSufficiencyScore(PlanDto plan, UserPreferenceDto userPreference) {
-        double planData = plan.getDataAllowance();
-        double userPrefData = userPreference.getPreferenceDataUsage();
+        double planData = UnitConverter.convertToGigabytes(
+                plan.getDataAllowance(),
+                plan.getDataAllowanceUnit(),
+                plan.getDataPeriod()
+        );
+        double userPrefData = UnitConverter.convertToGigabytes(
+                userPreference.getPreferenceDataUsage(),
+                userPreference.getPreferenceDataUsageUnit()
+        );
 
         boolean isSufficient = (planData == 0) || (planData >= userPrefData);
 
@@ -44,14 +51,15 @@ public class ScoreCalculator {
     private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
         if (userPref.getPreferenceDataUsage() == null || plan.getDataAllowance() == null) return 0.0;
 
-        int preferredData = UnitConverter.convertToGigabytes(
+        double preferredData = UnitConverter.convertToGigabytes(
                 userPref.getPreferenceDataUsage(),
                 userPref.getPreferenceDataUsageUnit()
         );
 
-        int planData = UnitConverter.convertToGigabytes(
+        double planData = UnitConverter.convertToGigabytes(
                 plan.getDataAllowance(),
-                plan.getDataAllowanceUnit()
+                plan.getDataAllowanceUnit(),
+                plan.getDataPeriod()
         );
 
         double score = scoringRule.calculateDataScore(preferredData, avgDataUsage, planData);
@@ -66,18 +74,18 @@ public class ScoreCalculator {
     }
 
     private double getSharedDataScore(UserPreferenceDto userPref, PlanDto plan) {
-        if (userPref.getPreferenceSharedDataUsage() == null || plan.getSharedDataAllowance() == null) {
+        if (userPref.getPreferenceSharedDataUsage() == null || plan.getTetheringDataAmount() == null) {
             return 0.0;
         }
 
-        int preferredShared = UnitConverter.convertToGigabytes(
+        double preferredShared = UnitConverter.convertToGigabytes(
                 userPref.getPreferenceSharedDataUsage(),
                 userPref.getPreferenceSharedDataUsageUnit()
         );
 
-        int planShared = UnitConverter.convertToGigabytes(
-                plan.getSharedDataAllowance(),
-                plan.getSharedDataAllowanceUnit()
+        double planShared = UnitConverter.convertToGigabytes(
+                plan.getTetheringDataAmount(),
+                plan.getTetheringDataUnit()
         );
 
         double score = scoringRule.calculateSharedDataScore(preferredShared, planShared);

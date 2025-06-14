@@ -3,7 +3,7 @@ package com.comprehensive.eureka.recommend.service.engine;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
-import com.comprehensive.eureka.recommend.dto.RecommendationDto;
+import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.dto.response.UserDataRecordResponseDto;
 import com.comprehensive.eureka.recommend.exception.ErrorCode;
@@ -34,7 +34,7 @@ public class UserPlanSimilarRecommender {
 
     private record UserPlanSimilarityResult(PlanDto plan, double similarity) {}
 
-    public List<RecommendationDto> recommendByUserPlanSimilarity(
+    public List<RecommendPlanDto> recommendByUserPlanSimilarity(
             UserPreferenceDto targetUserPreference,
             List<UserDataRecordResponseDto> targetUserHistory,
             List<PlanDto> targetPlans
@@ -44,10 +44,10 @@ public class UserPlanSimilarRecommender {
             double targetAvgDataUsage = dataRecordAvgCalculator.calculateAverageDataUsage(targetUserHistory);
             double[] targetUserVector = featureVectorGenerator.createUserFeatureVector(targetUserPreference, targetAvgDataUsage);
 
-            List<RecommendationDto> recommendations = targetPlans.parallelStream()
+            List<RecommendPlanDto> recommendations = targetPlans.parallelStream()
                     .map(plan -> {
                         try {
-                            log.info("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
+                            log.debug("요금제 ID: {}에 대한 유사도 계산 중...", plan.getPlanId());
                             List<BenefitDto> targetPlanBenefits = fetchPlanBenefits(plan.getPlanId());
                             double[] planVector = featureVectorGenerator.createPlanFeatureVector(plan);
 
@@ -57,7 +57,7 @@ public class UserPlanSimilarRecommender {
 
                             double baseSimilarity = (numericSimilarity * WeightConstant.NUMERIC_SIMILARITY_WEIGHT) + (benefitSimilarity * WeightConstant.BENEFIT_SIMILARITY_WEIGHT);
                             double finalSimilarity = baseSimilarity * sufficiencyScore;
-                            log.info("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
+                            log.debug("요금제 ID: {} 최종 유사도 점수: {}", plan.getPlanId(), finalSimilarity);
 
                             return new UserPlanSimilarityResult(plan, finalSimilarity);
 
@@ -69,7 +69,7 @@ public class UserPlanSimilarRecommender {
                     .filter(Objects::nonNull)
                     .sorted((a, b) -> Double.compare(b.similarity(), a.similarity()))
                     .limit(5)
-                    .map(result -> RecommendationDto.builder()
+                    .map(result -> RecommendPlanDto.builder()
                             .plan(result.plan())
                             .score(result.similarity())
                             .recommendationType("USER_PLAN_SIMILARITY")

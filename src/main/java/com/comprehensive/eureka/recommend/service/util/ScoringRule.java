@@ -1,6 +1,5 @@
 package com.comprehensive.eureka.recommend.service.util;
 
-import com.comprehensive.eureka.recommend.constant.DomainConstant;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
 import java.util.List;
@@ -9,14 +8,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScoringRule {
 
-    public double calculateDataScore(Integer preferredData, double actualAvgData, Integer planDataLimit) {
+    public double calculateDataScore(Double preferredData, Double actualAvgData, Double planDataLimit) {
         double targetUsage = 0.0;
-        double preferenceValue = (preferredData == null || preferredData == 0) ? 150.0 : preferredData.doubleValue();
+        double preferenceValue = (preferredData == null || preferredData == 0) ? 150.0 : preferredData;
 
         if (actualAvgData == 0.0) targetUsage = preferenceValue;
         else targetUsage = (preferenceValue * WeightConstant.DATA_PREFERENCE_WEIGHT) + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
 
-        double effectivePlanData = (planDataLimit == null || planDataLimit == 0) ? 10000.0 : planDataLimit.doubleValue();
+        boolean isUnlimited = (planDataLimit == 0);
+
+        if (isUnlimited && targetUsage >= 150) return 1.0;
+
+        double effectivePlanData = isUnlimited ? 10000.0 : planDataLimit;
 
         if (effectivePlanData < targetUsage) {
             double ratio = effectivePlanData / targetUsage;
@@ -37,10 +40,10 @@ public class ScoringRule {
         return Math.max(0.1, ratio);
     }
 
-    public double calculateSharedDataScore(Integer preferredSharedData, Integer planSharedData) {
+    public double calculateSharedDataScore(Double preferredSharedData, Double planSharedData) {
         if (preferredSharedData == 0 || planSharedData == 0) return 0.0;
 
-        double ratio = preferredSharedData.doubleValue() / planSharedData.doubleValue();
+        double ratio = preferredSharedData/ planSharedData;
 
         if (ratio <= 0.8) return 1.0 - Math.abs(0.6 - ratio);
         else if (ratio <= 1.0) return 0.7;
