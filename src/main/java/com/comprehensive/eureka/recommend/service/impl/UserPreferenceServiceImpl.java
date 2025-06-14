@@ -55,7 +55,7 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
                 .preferredSharedDataAllowance(userPreferenceDto.getPreferenceSharedDataUsage())
                 .preferredSharedDataUnit(userPreferenceDto.getPreferenceSharedDataUsageUnit())
                 .preferredPrice(userPreferenceDto.getPreferencePrice())
-                .preferredBenefit(userPreferenceDto.getPreferenceBenefit())
+                .preferredBenefitGroupId(userPreferenceDto.getPreferenceBenefitGroupId())
                 .preferredFamilyData(userPreferenceDto.isPreferenceFamilyData())
                 .preferredAdditionalCallAllowance(userPreferenceDto.getPreferenceValueAddedCallUsage())
                 .build();
@@ -69,7 +69,7 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
                 .preferenceSharedDataUsage(userPreference.getPreferredSharedDataAllowance())
                 .preferenceSharedDataUsageUnit(userPreference.getPreferredSharedDataUnit())
                 .preferencePrice(userPreference.getPreferredPrice())
-                .preferenceBenefit(userPreference.getPreferredBenefit())
+                .preferenceBenefitGroupId(userPreference.getPreferredBenefitGroupId())
                 .isPreferenceFamilyData(userPreference.isPreferredFamilyData())
                 .preferenceValueAddedCallUsage(userPreference.getPreferredAdditionalCallAllowance())
                 .build();

@@ -1,11 +1,19 @@
 package com.comprehensive.eureka.recommend.service.util;
 
-import com.comprehensive.eureka.recommend.dto.BenefitDto;
-import java.util.List;
+import com.comprehensive.eureka.recommend.dto.PlanDto;
+import com.comprehensive.eureka.recommend.exception.ErrorCode;
+import com.comprehensive.eureka.recommend.exception.RecommendationException;
+import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class SimilarityCalculator {
+
+    private final PlanApiServiceClient planApiServiceClient;
 
     public double calculateCosineSimilarity(double[] vector1, double[] vector2) {
         double dotProduct = 0.0;
@@ -32,14 +40,18 @@ public class SimilarityCalculator {
         return 1.0 / (1.0 + distance);
     }
 
-    public double calculateUserPlanBenefitSimilarity(String userBenefit, List<BenefitDto> planBenefits) {
-        if (userBenefit == null || planBenefits == null || planBenefits.isEmpty()) {
-            return 0.0;
+    public double calculateUserPlanBenefitSimilarity(Long preferenceBenefitGroupId, PlanDto plan) {
+        if (!isPlanHasBenefitGroupId(plan.getPlanId(), preferenceBenefitGroupId)) return 0.0;
+        else return 1.0;
+    }
+
+    private Boolean isPlanHasBenefitGroupId(Integer planId, Long benefitGroupId) {
+        try {
+            return planApiServiceClient.isPlanHasBenefitGroupId(planId, benefitGroupId);
+
+        } catch (Exception e) {
+            log.error("[외부 API 호출 실패] planId: {} 의 혜택 그룹 ID: {} 존재 여부 확인에 실패했습니다.", planId, benefitGroupId, e);
+            throw new RecommendationException(ErrorCode.PLAN_BENEFIT_GROUP_ID_CHECK_FAILURE);
         }
-
-        boolean isMatch = planBenefits.stream()
-                .anyMatch(benefitDto -> userBenefit.equals(benefitDto.getBenefitName()));
-
-        return isMatch ? 1.0 : 0.5;
     }
 }

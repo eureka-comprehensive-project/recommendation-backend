@@ -1,12 +1,20 @@
 package com.comprehensive.eureka.recommend.service.util;
 
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
-import com.comprehensive.eureka.recommend.dto.BenefitDto;
-import java.util.List;
+import com.comprehensive.eureka.recommend.dto.PlanDto;
+import com.comprehensive.eureka.recommend.exception.ErrorCode;
+import com.comprehensive.eureka.recommend.exception.RecommendationException;
+import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class ScoringRule {
+
+    private final PlanApiServiceClient planApiServiceClient;
 
     public double calculateDataScore(Double preferredData, Double actualAvgData, Double planDataLimit) {
         double targetUsage = 0.0;
@@ -50,14 +58,9 @@ public class ScoringRule {
         else return Math.max(0.1, 1.0 / ratio);
     }
 
-    public double calculateBenefitScore(String userBenefit, List<BenefitDto> planBenefits) {
-        if (userBenefit == null || planBenefits == null || planBenefits.isEmpty()) return 0.0;
-
-
-        boolean isMatch = planBenefits.stream()
-                .anyMatch(benefitDto -> userBenefit.equals(benefitDto.getBenefitName()));
-
-        return isMatch ? 1.0 : 0.0;
+    public double calculateBenefitScore(Long preferenceBenefitGroupId, PlanDto plan) {
+        if (!isPlanHasBenefitGroupId(plan.getPlanId(), preferenceBenefitGroupId)) return 0.0;
+        else return 1.0;
     }
 
     public double calculateValueAddedCallScore(Integer preferredValueAddedCallUsage, Integer planValueAddedCallAmount) {
@@ -74,5 +77,15 @@ public class ScoringRule {
         if (isPreferredFamilyData && isPlanFamilyDataEnabled) return 1.0;
         else if (isPlanFamilyDataEnabled) return 0.5;
         else return 0.0;
+    }
+
+    private Boolean isPlanHasBenefitGroupId(Integer planId, Long benefitGroupId) {
+        try {
+            return planApiServiceClient.isPlanHasBenefitGroupId(planId, benefitGroupId);
+
+        } catch (Exception e) {
+            log.error("[외부 API 호출 실패] planId: {} 의 혜택 그룹 ID: {} 존재 여부 확인에 실패했습니다.", planId, benefitGroupId, e);
+            throw new RecommendationException(ErrorCode.PLAN_BENEFIT_GROUP_ID_CHECK_FAILURE);
+        }
     }
 }
