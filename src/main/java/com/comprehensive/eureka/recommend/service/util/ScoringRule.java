@@ -1,5 +1,6 @@
 package com.comprehensive.eureka.recommend.service.util;
 
+import com.comprehensive.eureka.recommend.constant.RangeConstant;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
 import com.comprehensive.eureka.recommend.exception.ErrorCode;
@@ -17,17 +18,19 @@ public class ScoringRule {
     private final PlanApiServiceClient planApiServiceClient;
 
     public double calculateDataScore(Double preferredData, Double actualAvgData, Double planDataLimit) {
-        double targetUsage = 0.0;
-        double preferenceValue = (preferredData == null || preferredData == 0) ? 150.0 : preferredData;
+        double targetUsage = 0.0, preferenceValue = 0.0;
+
+        if (preferredData == null) preferenceValue = 0.0;
+        else if (preferredData == RangeConstant.UNLIMITED || preferredData > RangeConstant.MAX_PLAN_DATA) preferenceValue = RangeConstant.MAX_DATA;
 
         if (actualAvgData == 0.0) targetUsage = preferenceValue;
         else targetUsage = (preferenceValue * WeightConstant.DATA_PREFERENCE_WEIGHT) + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
 
-        boolean isUnlimited = (planDataLimit == 0);
+        boolean isUnlimited = (planDataLimit == RangeConstant.MAX_DATA);
 
-        if (isUnlimited && targetUsage >= 150) return 1.0;
+        if (isUnlimited && targetUsage >= 100.0) return 1.0;
 
-        double effectivePlanData = isUnlimited ? 10000.0 : planDataLimit;
+        double effectivePlanData = planDataLimit;
 
         if (effectivePlanData < targetUsage) {
             double ratio = effectivePlanData / targetUsage;

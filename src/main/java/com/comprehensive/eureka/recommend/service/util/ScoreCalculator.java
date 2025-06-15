@@ -46,7 +46,10 @@ public class ScoreCalculator {
         if (planData < (preferenceData * 0.95)) return 0.3;
 
         double dataDiff = planData - preferenceData;
-        double dataScore = Math.exp(-0.01 * dataDiff);
+        double dataScore;
+
+        if (dataDiff > 0) dataScore = Math.exp(-0.003 * dataDiff);
+        else dataScore = Math.exp(-0.01 * dataDiff);
 
         double preferencePrice = userPreference.getPreferencePrice().doubleValue();
         double planPrice = plan.getMonthlyFee().doubleValue();
