@@ -41,6 +41,7 @@ public class SimilarityCalculator {
     }
 
     public double calculateUserPlanBenefitSimilarity(Long preferenceBenefitGroupId, PlanDto plan) {
+        if (preferenceBenefitGroupId == null) return 0.0;
         if (!isPlanHasBenefitGroupId(plan.getPlanId(), preferenceBenefitGroupId)) return 0.0;
         else return 1.0;
     }
