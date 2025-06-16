@@ -22,6 +22,7 @@ public class ScoringRule {
 
         if (preferredData == null) preferenceValue = 0.0;
         else if (preferredData == RangeConstant.UNLIMITED || preferredData > RangeConstant.MAX_PLAN_DATA) preferenceValue = RangeConstant.MAX_DATA;
+        else preferenceValue = preferredData;
 
         if (actualAvgData == 0.0) targetUsage = preferenceValue;
         else targetUsage = (preferenceValue * WeightConstant.DATA_PREFERENCE_WEIGHT) + (actualAvgData * WeightConstant.DATA_PATTERN_WEIGHT);
