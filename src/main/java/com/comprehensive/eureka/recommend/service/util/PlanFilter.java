@@ -12,9 +12,7 @@ public class PlanFilter {
     public List<PlanDto> filterPlansByAge(List<PlanDto> allPlans, int userAge) {
         Set<String> targetCategories;
 
-        if (userAge < 13) {
-            targetCategories = Set.of(CategoryConstant.CATEGORY_KIDS, CategoryConstant.CATEGORY_PREMIUM);
-        } else if (userAge < 20) {
+        if (userAge < 20) {
             targetCategories = Set.of(CategoryConstant.CATEGORY_TEEN, CategoryConstant.CATEGORY_PREMIUM);
         } else if (userAge < 30) {
             targetCategories = Set.of(CategoryConstant.CATEGORY_YOUTH, CategoryConstant.CATEGORY_PREMIUM);
