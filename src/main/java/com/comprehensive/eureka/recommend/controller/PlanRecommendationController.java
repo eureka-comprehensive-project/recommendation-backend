@@ -27,7 +27,7 @@ public class PlanRecommendationController {
     @PostMapping("/{userId}")
     public BaseResponseDto<RecommendationResponseDto> recommendPlan(@PathVariable Long userId, @RequestBody UserPreferenceDto userPreferenceDto) {
         userPreferenceService.updateUserPreference(userId, userPreferenceDto);
-        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, null);
+        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, null, null);
         return BaseResponseDto.success(recommendation);
     }
 
@@ -37,10 +37,10 @@ public class PlanRecommendationController {
         return BaseResponseDto.success(recommendations);
     }
 
-    @PostMapping("/feedback/{userId}")
-    public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId, @RequestBody FeedbackDto feedbackDto) {
+    @PostMapping("/feedback/{userId}/{planId}")
+    public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId, @PathVariable Integer planId, @RequestBody FeedbackDto feedbackDto) {
         userPreferenceService.updateUserPreference(userId, feedbackDto);
-        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, feedbackDto);
+        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, feedbackDto, planId);
         return BaseResponseDto.success(recommendation);
     }
 }

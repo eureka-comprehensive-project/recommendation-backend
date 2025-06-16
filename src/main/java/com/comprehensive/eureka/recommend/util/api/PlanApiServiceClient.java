@@ -26,6 +26,15 @@ public class PlanApiServiceClient {
         return response.getData();
     }
 
+    public PlanDto getPlanById(Integer planId) {
+        BaseResponseDto<PlanDto> response = webClientUtil.get(
+                DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH + planId,
+                new ParameterizedTypeReference<BaseResponseDto<PlanDto>>() {}
+        );
+
+        return response.getData();
+    }
+
     public List<BenefitDto> getBenefitsByPlanId(Integer planId) {
         BaseResponseDto<List<BenefitDto>> response = webClientUtil.get(
                 DomainConstant.PLAN_DOMAIN + DomainConstant.SLASH + DomainConstant.PLAN_SERVICE_KEY + DomainConstant.SLASH + planId + "/benefits",

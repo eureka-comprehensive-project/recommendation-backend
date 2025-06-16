@@ -13,6 +13,7 @@ import com.comprehensive.eureka.recommend.exception.RecommendationException;
 import com.comprehensive.eureka.recommend.repository.UserPreferenceRepository;
 import com.comprehensive.eureka.recommend.service.PlanRecommendationService;
 import com.comprehensive.eureka.recommend.service.engine.BasicRecommender;
+import com.comprehensive.eureka.recommend.service.engine.PlanSimilarRecommender;
 import com.comprehensive.eureka.recommend.service.engine.UserPlanSimilarRecommender;
 import com.comprehensive.eureka.recommend.service.engine.UserSimilarRecommender;
 import com.comprehensive.eureka.recommend.service.engine.WeightRecommender;
@@ -42,16 +43,18 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     private final UserApiServiceClient userApiServiceClient;
 
     private final BasicRecommender basicRecommender;
-    private final UserPlanSimilarRecommender userPlanSimilarRecommender;
-    private final UserSimilarRecommender userSimilarRecommender;
     private final WeightRecommender weightRecommender;
+    private final UserSimilarRecommender userSimilarRecommender;
+    private final PlanSimilarRecommender planSimilarRecommender;
+    private final UserPlanSimilarRecommender userPlanSimilarRecommender;
+
     private final RecommendationCombineAndRanker recommendationCombineAndRanker;
     private final DataRecordAvgCalculator dataRecordAvgCalculator;
 
     private final PlanFilter planFilter;
 
     @Override
-    public RecommendationResponseDto recommendPlan(Long userId, FeedbackDto feedbackDto) {
+    public RecommendationResponseDto recommendPlan(Long userId, FeedbackDto feedbackDto, Integer planId) {
         List<PlanDto> allPlans = fetchAllPlans();
         UserPreferenceDto userPreference = fetchUserPreference(userId);
         int userAge = getUserAge(fetchUserBirthDay(userId));
@@ -68,6 +71,9 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
 
             List<PlanDto> targetPlans = planFilter.filterPlansByAge(allPlans, userAge);
             List<UserDataRecordResponseDto> userDataHistory = fetchUserDataRecords(userId);
+
+            if (planId != null && feedbackDto.getSentimentCode() == 1) return planSimilarRecommender.recommendByPlanSimilarity(targetPlans, fetchPlanById(planId),
+                    avgDataUsage, userPreference);
 
             // 1번 사용자 통신성향과 나이에 맞는 요금제 유사도
             // 디비에 저장되어 있는 사용자 통신성향을 추출
@@ -89,6 +95,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
             // 가중치가 높은 필드에 대해서는 점수 부여를 더 크게 함
             List<RecommendPlanDto> weightedResults = weightRecommender.recommendByWeightScore(userPreference,
                     targetPlans, userDataHistory, feedbackDto);
+
 
             return recommendationCombineAndRanker.combineAndRankRecommendations(
                     userSimilarityResults,
@@ -148,6 +155,8 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     }
 
     private Integer getUserAge(LocalDate birthDay) {
+        if (birthDay == null) return 30;
+
         LocalDate today = LocalDate.now();
         return Period.between(birthDay, today).getYears();
     }
@@ -200,6 +209,16 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
         } catch (Exception e) {
             log.error("[외부 API 호출 실패] 요금제 혜택 정보 호출에 실패했습니다.", e);
             throw new RecommendationException(ErrorCode.PLAN_BENEFIT_LOAD_FAILURE);
+        }
+    }
+
+    private PlanDto fetchPlanById(Integer planId) {
+        try {
+            return planApiServiceClient.getPlanById(planId);
+
+        } catch (Exception e) {
+            log.error("[외부 API 호출 실패] planId: {} 의 요금제 정보 호출에 실패했습니다.", planId, e);
+            throw new RecommendationException(ErrorCode.PLAN_LOAD_FAILURE);
         }
     }
 
