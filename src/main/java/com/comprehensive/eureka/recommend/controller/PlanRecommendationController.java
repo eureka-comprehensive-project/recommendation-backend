@@ -1,5 +1,6 @@
 package com.comprehensive.eureka.recommend.controller;
 
+import com.comprehensive.eureka.recommend.dto.FeedbackDto;
 import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.dto.base.BaseResponseDto;
@@ -26,7 +27,7 @@ public class PlanRecommendationController {
     @PostMapping("/{userId}")
     public BaseResponseDto<RecommendationResponseDto> recommendPlan(@PathVariable Long userId, @RequestBody UserPreferenceDto userPreferenceDto) {
         userPreferenceService.updateUserPreference(userId, userPreferenceDto);
-        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId);
+        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, null);
         return BaseResponseDto.success(recommendation);
     }
 
@@ -34,5 +35,12 @@ public class PlanRecommendationController {
     public BaseResponseDto<List<RecommendPlanDto>> recommendPlanByKeyword(@PathVariable String keyword) {
         List<RecommendPlanDto> recommendations = planRecommendationService.recommendPlanByKeyword(keyword);
         return BaseResponseDto.success(recommendations);
+    }
+
+    @PostMapping("/feedback/{userId}")
+    public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId, @RequestBody FeedbackDto feedbackDto) {
+        userPreferenceService.updateUserPreference(userId, feedbackDto);
+        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, feedbackDto);
+        return BaseResponseDto.success(recommendation);
     }
 }

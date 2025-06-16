@@ -1,6 +1,7 @@
 package com.comprehensive.eureka.recommend.service.impl;
 
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
+import com.comprehensive.eureka.recommend.dto.FeedbackDto;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
 import com.comprehensive.eureka.recommend.dto.RecommendPlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
@@ -50,7 +51,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     private final PlanFilter planFilter;
 
     @Override
-    public RecommendationResponseDto recommendPlan(Long userId) {
+    public RecommendationResponseDto recommendPlan(Long userId, FeedbackDto feedbackDto) {
         List<PlanDto> allPlans = fetchAllPlans();
         UserPreferenceDto userPreference = fetchUserPreference(userId);
         int userAge = getUserAge(fetchUserBirthDay(userId));
@@ -87,7 +88,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
             // 통신성향의 각 필드와 요금제의 각 필드를 비교하면서 점수 부여
             // 가중치가 높은 필드에 대해서는 점수 부여를 더 크게 함
             List<RecommendPlanDto> weightedResults = weightRecommender.recommendByWeightScore(userPreference,
-                    targetPlans, userDataHistory);
+                    targetPlans, userDataHistory, feedbackDto);
 
             return recommendationCombineAndRanker.combineAndRankRecommendations(
                     userSimilarityResults,
@@ -116,7 +117,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
                     .limit(3)
                     .toList();
             case "어린이", "초등학생", "키즈", "유치원", "유치원생", "아이" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory().contains("키즈"))
+                    .filter(plan -> plan.getPlanName().contains("키즈"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();
