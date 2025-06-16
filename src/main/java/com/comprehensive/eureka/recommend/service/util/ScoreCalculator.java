@@ -24,8 +24,8 @@ public class ScoreCalculator {
 
     public double calculateWeightedScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan, FeedbackDto feedbackDto) {
         double score = 0.0;
-        score += getDataScore(userPref, avgDataUsage, plan);
-        score += getPriceScore(userPref, plan);
+        score += getDataScore(userPref, avgDataUsage, plan, feedbackDto);
+        score += getPriceScore(userPref, plan, feedbackDto);
         score += getSharedDataScore(userPref, plan);
         score += getBenefitScore(userPref, plan, feedbackDto);
         score += getValueAddedCallScore(userPref, plan);
@@ -65,7 +65,7 @@ public class ScoreCalculator {
         return (dataScore * 0.6) + (priceScore * 0.4);
     }
 
-    private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
+    private double getDataScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan, FeedbackDto feedbackDto) {
         if (userPref.getPreferenceDataUsage() == null || plan.getDataAllowance() == null) return 0.0;
 
         double preferredData = UnitConverter.convertToGigabytes(
@@ -80,14 +80,18 @@ public class ScoreCalculator {
         );
 
         double score = scoringRule.calculateDataScore(preferredData, avgDataUsage, planData);
-        return score * WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT;
+
+        if (feedbackDto == null || (feedbackDto.getDetailCode() != 1 && feedbackDto.getDetailCode() != 2)) return score * WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT;
+        else return score * (WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT + FeedbackConstant.DATA_ADJUSTMENT_RATE);
     }
 
-    private double getPriceScore(UserPreferenceDto userPref, PlanDto plan) {
+    private double getPriceScore(UserPreferenceDto userPref, PlanDto plan, FeedbackDto feedbackDto) {
         if (userPref.getPreferencePrice() == null || plan.getMonthlyFee() == null) return 0.0;
 
         double score = scoringRule.calculatePriceScore(userPref.getPreferencePrice(), plan.getMonthlyFee());
-        return score * WeightConstant.PREFERENCE_PRICE_WEIGHT;
+
+        if (feedbackDto == null || (feedbackDto.getDetailCode() != 3 && feedbackDto.getDetailCode() != 4)) return score * WeightConstant.PREFERENCE_PRICE_WEIGHT;
+        else return score * (WeightConstant.PREFERENCE_PRICE_WEIGHT + FeedbackConstant.PRICE_ADJUSTMENT_RATE);
     }
 
     private double getSharedDataScore(UserPreferenceDto userPref, PlanDto plan) {
