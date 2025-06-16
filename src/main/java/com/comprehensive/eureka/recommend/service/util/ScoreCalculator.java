@@ -1,7 +1,9 @@
 package com.comprehensive.eureka.recommend.service.util;
 
+import com.comprehensive.eureka.recommend.constant.FeedbackConstant;
 import com.comprehensive.eureka.recommend.constant.WeightConstant;
 import com.comprehensive.eureka.recommend.dto.BenefitDto;
+import com.comprehensive.eureka.recommend.dto.FeedbackDto;
 import com.comprehensive.eureka.recommend.dto.PlanDto;
 import com.comprehensive.eureka.recommend.dto.UserPreferenceDto;
 import com.comprehensive.eureka.recommend.exception.ErrorCode;
@@ -20,12 +22,12 @@ public class ScoreCalculator {
     private final ScoringRule scoringRule;
     private final PlanApiServiceClient planApiServiceClient;
 
-    public double calculateWeightedScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan) {
+    public double calculateWeightedScore(UserPreferenceDto userPref, double avgDataUsage, PlanDto plan, FeedbackDto feedbackDto) {
         double score = 0.0;
         score += getDataScore(userPref, avgDataUsage, plan);
         score += getPriceScore(userPref, plan);
         score += getSharedDataScore(userPref, plan);
-        score += getBenefitScore(userPref, plan);
+        score += getBenefitScore(userPref, plan, feedbackDto);
         score += getValueAddedCallScore(userPref, plan);
         score += getFamilyDataScore(userPref, plan);
         return score;
@@ -107,12 +109,14 @@ public class ScoreCalculator {
         return score * WeightConstant.PREFERENCE_SHARED_DATA_WEIGHT;
     }
 
-    private double getBenefitScore(UserPreferenceDto userPref, PlanDto plan) {
+    private double getBenefitScore(UserPreferenceDto userPref, PlanDto plan, FeedbackDto feedbackDto) {
         if (userPref.getPreferenceBenefitGroupId() == null) {
             return 0.0;
         }
         double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefitGroupId(), plan);
-        return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
+
+        if (feedbackDto == null || feedbackDto.getDetailCode() != 5) return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
+        else return score * (WeightConstant.PREFERENCE_BENEFITS_WEIGHT + FeedbackConstant.BENEFIT_ADJUSTMENT_RATE);
     }
 
     private double getValueAddedCallScore(UserPreferenceDto userPref, PlanDto plan) {

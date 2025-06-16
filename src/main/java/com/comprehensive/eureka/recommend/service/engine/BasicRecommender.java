@@ -75,7 +75,6 @@ public class BasicRecommender {
     }
 
     private String getKeywordForAge(int age) {
-        if (age <= 12) return "키즈";
         if (age <= 19) return "청소년";
         if (age <= 29) return "유스";
         if (age < 65) return "프리미엄";
