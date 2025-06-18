@@ -114,27 +114,27 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
 
         List<PlanDto> filteredPlans = switch (keyword) {
             case "대학생", "20대", "유스", "유쓰" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory().contains("유스"))
+                    .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("유스"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();
             case "청소년", "10대", "중학생", "고등학생", "학생" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory().contains("청소년"))
+                    .filter(plan -> plan.getPlanCategory() != null &&plan.getPlanCategory().contains("청소년"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();
             case "어린이", "초등학생", "키즈", "유치원", "유치원생", "아이" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanName().contains("키즈"))
+                    .filter(plan -> plan.getPlanCategory() != null &&plan.getPlanName().contains("키즈"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();
             case "시니어", "노인", "65세 이상", "부모님", "어르신" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory().contains("시니어"))
+                    .filter(plan ->plan.getPlanCategory() != null && plan.getPlanCategory().contains("시니어"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();
             default -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory().contains("프리미엄"))
+                    .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("프리미엄"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(3)
                     .toList();

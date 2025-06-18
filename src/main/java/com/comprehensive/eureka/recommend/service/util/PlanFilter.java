@@ -23,7 +23,7 @@ public class PlanFilter {
         }
 
         return allPlans.stream()
-                .filter(plan -> targetCategories.contains(plan.getPlanCategory()))
+                .filter(plan -> plan.getPlanCategory() != null && targetCategories.contains(plan.getPlanCategory()))
                 .toList();
     }
 }
