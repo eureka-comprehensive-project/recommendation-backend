@@ -35,13 +35,13 @@ public class BasicRecommender {
             String keyword = getKeywordForAge(age);
 
             List<PlanDto> ageSpecificPlans = allPlans.stream()
-                    .filter(p -> p.getPlanCategory().contains(keyword))
+                    .filter(p -> p.getPlanCategory() != null && p.getPlanCategory().contains(keyword))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(1)
                     .toList();
 
             List<PlanDto> premiumPlans = allPlans.stream()
-                    .filter(p -> p.getPlanCategory().contains("프리미엄"))
+                    .filter(p -> p.getPlanCategory() != null && p.getPlanCategory().contains("프리미엄"))
                     .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
                     .limit(2)
                     .toList();
