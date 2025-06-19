@@ -33,14 +33,23 @@ public class PlanRecommendationController {
 
     @GetMapping("/keyword/{keyword}")
     public BaseResponseDto<List<RecommendPlanDto>> recommendPlanByKeyword(@PathVariable String keyword) {
-        List<RecommendPlanDto> recommendations = planRecommendationService.recommendPlanByKeyword(keyword);
+        List<RecommendPlanDto> recommendations = planRecommendationService.recommendPlanByKeyword(keyword, null);
         return BaseResponseDto.success(recommendations);
     }
 
     @PostMapping("/feedback/{userId}/{planId}")
     public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId, @PathVariable Integer planId, @RequestBody FeedbackDto feedbackDto) {
         userPreferenceService.updateUserPreference(userId, feedbackDto);
-        RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, feedbackDto, planId);
+        RecommendationResponseDto recommendation = null;
+
+        if (feedbackDto.getKeyword() == null || feedbackDto.getKeyword().isEmpty())
+            recommendation = planRecommendationService.recommendPlan(userId, feedbackDto, planId);
+        else {
+            recommendation = RecommendationResponseDto.builder()
+                    .recommendPlans(planRecommendationService.recommendPlanByKeyword(feedbackDto.getKeyword(), feedbackDto))
+                    .build();
+        }
+
         return BaseResponseDto.success(recommendation);
     }
 }

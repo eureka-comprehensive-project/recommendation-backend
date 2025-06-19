@@ -20,6 +20,7 @@ import com.comprehensive.eureka.recommend.service.engine.WeightRecommender;
 import com.comprehensive.eureka.recommend.service.util.DataRecordAvgCalculator;
 import com.comprehensive.eureka.recommend.service.util.PlanFilter;
 import com.comprehensive.eureka.recommend.service.util.RecommendationCombineAndRanker;
+import com.comprehensive.eureka.recommend.service.util.UnitConverter;
 import com.comprehensive.eureka.recommend.util.api.PlanApiServiceClient;
 import com.comprehensive.eureka.recommend.util.api.UserApiServiceClient;
 import java.time.LocalDate;
@@ -108,41 +109,58 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
     }
 
     @Override
-    public List<RecommendPlanDto> recommendPlanByKeyword(String keyword) {
+    public List<RecommendPlanDto> recommendPlanByKeyword(String keyword, FeedbackDto feedbackDto) {
         log.info("[키워드 추천 로직 시작] keyword: {}", keyword);
         List<PlanDto> allPlans = fetchAllPlans();
 
+        // 1. 키워드로 요금제 필터링
         List<PlanDto> filteredPlans = switch (keyword) {
-            case "대학생", "20대", "유스", "유쓰" -> allPlans.stream()
+            case "대학생", "20대", "유스", "유쓰", "사회초년생" -> allPlans.stream()
                     .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("유스"))
-                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
-                    .limit(3)
                     .toList();
             case "청소년", "10대", "중학생", "고등학생", "학생" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory() != null &&plan.getPlanCategory().contains("청소년"))
-                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
-                    .limit(3)
+                    .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("청소년"))
                     .toList();
-            case "어린이", "초등학생", "키즈", "유치원", "유치원생", "아이" -> allPlans.stream()
-                    .filter(plan -> plan.getPlanCategory() != null &&plan.getPlanName().contains("키즈"))
-                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
-                    .limit(3)
+            case "어린이", "초등학생", "키즈", "유치원", "유치원생", "아이", "어린아이" -> allPlans.stream()
+                    .filter(plan -> plan.getPlanCategory() != null && plan.getPlanName().contains("키즈"))
                     .toList();
-            case "시니어", "노인", "65세 이상", "부모님", "어르신" -> allPlans.stream()
-                    .filter(plan ->plan.getPlanCategory() != null && plan.getPlanCategory().contains("시니어"))
-                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
-                    .limit(3)
+            case "시니어", "노인", "65세 이상", "부모님", "어르신", "할머니", "할아버지" -> allPlans.stream()
+                    .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("시니어"))
                     .toList();
             default -> allPlans.stream()
                     .filter(plan -> plan.getPlanCategory() != null && plan.getPlanCategory().contains("프리미엄"))
-                    .sorted(Comparator.comparing(PlanDto::getMonthlyFee).reversed())
-                    .limit(3)
                     .toList();
         };
 
+        Comparator<PlanDto> sorter = Comparator.comparing(PlanDto::getMonthlyFee).reversed();
+
+        if (feedbackDto != null && feedbackDto.getSentimentCode() == 2) {
+            log.info("[키워드 추천 피드백 적용] DetailCode: {}", feedbackDto.getDetailCode());
+
+            sorter = switch (feedbackDto.getDetailCode().intValue()) {
+                case 1 -> // 데이터 부족
+                        Comparator.comparing((PlanDto plan) ->
+                                        UnitConverter.convertToGigabytes(plan.getDataAllowance(), plan.getDataAllowanceUnit()))
+                                .reversed();
+                case 2 -> // 데이터 너무 많음
+                        Comparator.comparing((PlanDto plan) ->
+                                UnitConverter.convertToGigabytes(plan.getDataAllowance(), plan.getDataAllowanceUnit()));
+                case 3 -> // 가격 비쌈
+                        Comparator.comparing(PlanDto::getMonthlyFee);
+                case 4 -> // 가격 너무 저렴
+                        Comparator.comparing(PlanDto::getMonthlyFee).reversed();
+                default -> sorter;
+            };
+        }
+
+        List<PlanDto> recommendedPlans = filteredPlans.stream()
+                .sorted(sorter)
+                .limit(3)
+                .toList();
+
         log.info("[키워드 추천 로직 완료] keyword: {}", keyword);
 
-        return filteredPlans.stream()
+        return recommendedPlans.stream()
                 .map(plan -> RecommendPlanDto.builder()
                         .plan(plan)
                         .recommendationType("KEYWORD")
