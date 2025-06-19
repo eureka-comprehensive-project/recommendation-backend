@@ -132,6 +132,9 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
                 log.info("가격 저렴 피드백: 선호 가격 {} -> {}", currentPrice, adjustedPrice);
             }
         } else if (detailCode == 5) {
+            if (preference.getPreferredBenefitGroupId() == null || preference.getPreferredBenefitGroupId() == 0) {
+                preference.setPreferredBenefitGroupId(1L);
+            }
             log.info("부가혜택 부족 피드백: 부가혜택 가중치를 높입니다.");
 
         } else {
