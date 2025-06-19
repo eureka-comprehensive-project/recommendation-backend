@@ -8,5 +8,5 @@ import java.util.List;
 public interface PlanRecommendationService {
 
     RecommendationResponseDto recommendPlan(Long userId, FeedbackDto feedbackDto, Integer planId);
-    List<RecommendPlanDto> recommendPlanByKeyword(String keyword);
+    List<RecommendPlanDto> recommendPlanByKeyword(String keyword, FeedbackDto feedbackDto);
 }
