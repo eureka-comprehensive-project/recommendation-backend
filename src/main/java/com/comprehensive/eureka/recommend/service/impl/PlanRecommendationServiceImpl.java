@@ -135,7 +135,7 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
 
         Comparator<PlanDto> sorter = Comparator.comparing(PlanDto::getMonthlyFee).reversed();
 
-        if (feedbackDto != null && feedbackDto.getSentimentCode() == 2) {
+        if (feedbackDto != null && (feedbackDto.getSentimentCode() == 2 || feedbackDto.getSentimentCode() == 3)) {
             log.info("[키워드 추천 피드백 적용] DetailCode: {}", feedbackDto.getDetailCode());
 
             sorter = switch (feedbackDto.getDetailCode().intValue()) {
