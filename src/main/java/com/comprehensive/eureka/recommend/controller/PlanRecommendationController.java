@@ -27,7 +27,8 @@ public class PlanRecommendationController {
     private final PlanRecommendationService planRecommendationService;
 
     @PostMapping("/{userId}")
-    public BaseResponseDto<RecommendationResponseDto> recommendPlan(@PathVariable Long userId, @RequestBody UserPreferenceDto userPreferenceDto) {
+    public BaseResponseDto<RecommendationResponseDto> recommendPlan(@PathVariable Long userId,
+                                                                    @RequestBody UserPreferenceDto userPreferenceDto) {
         userPreferenceService.updateUserPreference(userId, userPreferenceDto);
         RecommendationResponseDto recommendation = planRecommendationService.recommendPlan(userId, null, null);
         return BaseResponseDto.success(recommendation);
@@ -40,22 +41,25 @@ public class PlanRecommendationController {
     }
 
     @PostMapping("/feedback/{userId}/{planId}")
-    public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId, @PathVariable Integer planId, @RequestBody FeedbackDto feedbackDto) {
-        userPreferenceService.updateUserPreference(userId, feedbackDto);
+    public BaseResponseDto<RecommendationResponseDto> submitFeedback(@PathVariable Long userId,
+                                                                     @PathVariable Integer planId,
+                                                                     @RequestBody FeedbackDto feedbackDto) {
+
         RecommendationResponseDto recommendation = null;
 
         log.info("keyword: {}, sentimentCode: {}, detailCode: {}",
-                 feedbackDto.getKeyword(), feedbackDto.getSentimentCode(), feedbackDto.getDetailCode());
+                feedbackDto.getKeyword(), feedbackDto.getSentimentCode(), feedbackDto.getDetailCode());
 
-        if (feedbackDto.getKeyword() == null || feedbackDto.getKeyword().isEmpty())
+        if (feedbackDto.getKeyword() == null || feedbackDto.getKeyword().isEmpty()) {
+            userPreferenceService.updateUserPreference(userId, feedbackDto);
             recommendation = planRecommendationService.recommendPlan(userId, feedbackDto, planId);
 
-        else {
+        } else {
             recommendation = RecommendationResponseDto.builder()
-                    .recommendPlans(planRecommendationService.recommendPlanByKeyword(feedbackDto.getKeyword(), feedbackDto))
+                    .recommendPlans(
+                            planRecommendationService.recommendPlanByKeyword(feedbackDto.getKeyword(), feedbackDto))
                     .build();
         }
-
         return BaseResponseDto.success(recommendation);
     }
 }
