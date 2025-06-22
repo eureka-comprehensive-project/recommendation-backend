@@ -103,7 +103,8 @@ public class PlanRecommendationServiceImpl implements PlanRecommendationService 
                     weightedResults,
                     userPlanSimilarityResults,
                     userPreference,
-                    avgDataUsage
+                    avgDataUsage,
+                    feedbackDto
             );
         }
     }

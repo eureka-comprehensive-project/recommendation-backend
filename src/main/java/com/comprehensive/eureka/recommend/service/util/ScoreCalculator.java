@@ -81,8 +81,15 @@ public class ScoreCalculator {
 
         double score = scoringRule.calculateDataScore(preferredData, avgDataUsage, planData);
 
-        if (feedbackDto == null || (feedbackDto.getDetailCode() != 1 && feedbackDto.getDetailCode() != 2)) return score * WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT;
-        else return score * (WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT + FeedbackConstant.DATA_ADJUSTMENT_RATE);
+        if (feedbackDto != null && (feedbackDto.getDetailCode() == 1 || feedbackDto.getDetailCode() == 2)) {
+            if (feedbackDto.getSentimentCode() == 3) {
+                return score * (WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT + FeedbackConstant.DATA_ADJUSTMENT_RATE_ANGRY);
+            } else {
+                return score * (WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT + FeedbackConstant.DATA_ADJUSTMENT_RATE);
+            }
+        } else {
+            return score * WeightConstant.PREFERENCE_DATA_USAGE_WEIGHT;
+        }
     }
 
     private double getPriceScore(UserPreferenceDto userPref, PlanDto plan, FeedbackDto feedbackDto) {
@@ -90,8 +97,15 @@ public class ScoreCalculator {
 
         double score = scoringRule.calculatePriceScore(userPref.getPreferencePrice(), plan.getMonthlyFee());
 
-        if (feedbackDto == null || (feedbackDto.getDetailCode() != 3 && feedbackDto.getDetailCode() != 4)) return score * WeightConstant.PREFERENCE_PRICE_WEIGHT;
-        else return score * (WeightConstant.PREFERENCE_PRICE_WEIGHT + FeedbackConstant.PRICE_ADJUSTMENT_RATE);
+        if (feedbackDto != null && (feedbackDto.getDetailCode() == 3 || feedbackDto.getDetailCode() == 4)) {
+            if (feedbackDto.getSentimentCode() == 3) {
+                return score * (WeightConstant.PREFERENCE_PRICE_WEIGHT + FeedbackConstant.PRICE_ADJUSTMENT_RATE_ANGRY);
+            } else {
+                return score * (WeightConstant.PREFERENCE_PRICE_WEIGHT + FeedbackConstant.PRICE_ADJUSTMENT_RATE);
+            }
+        } else {
+            return score * WeightConstant.PREFERENCE_PRICE_WEIGHT;
+        }
     }
 
     private double getSharedDataScore(UserPreferenceDto userPref, PlanDto plan) {
@@ -119,8 +133,15 @@ public class ScoreCalculator {
         }
         double score = scoringRule.calculateBenefitScore(userPref.getPreferenceBenefitGroupId(), plan);
 
-        if (feedbackDto == null || feedbackDto.getDetailCode() != 5) return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
-        else return score * (WeightConstant.PREFERENCE_BENEFITS_WEIGHT + FeedbackConstant.BENEFIT_ADJUSTMENT_RATE);
+        if (feedbackDto != null && feedbackDto.getDetailCode() == 5) {
+            if (feedbackDto.getSentimentCode() == 3) {
+                return score * (WeightConstant.PREFERENCE_BENEFITS_WEIGHT + FeedbackConstant.BENEFIT_ADJUSTMENT_RATE_ANGRY);
+            } else {
+                return score * (WeightConstant.PREFERENCE_BENEFITS_WEIGHT + FeedbackConstant.BENEFIT_ADJUSTMENT_RATE);
+            }
+        } else {
+            return score * WeightConstant.PREFERENCE_BENEFITS_WEIGHT;
+        }
     }
 
     private double getValueAddedCallScore(UserPreferenceDto userPref, PlanDto plan) {

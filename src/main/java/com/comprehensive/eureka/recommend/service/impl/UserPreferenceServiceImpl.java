@@ -56,9 +56,9 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
         } else {
             UserPreference existingPreference = userPreferenceOptional.get();
 
-            if (feedbackDto.getSentimentCode() == 2) {
-                log.info("피드백(불만족)에 따라 userId: {} 의 통신 성향을 조정합니다. DetailCode: {}", userId, feedbackDto.getDetailCode());
-                adjustPreferenceByFeedback(existingPreference, feedbackDto.getDetailCode());
+            if (feedbackDto.getSentimentCode() == 2 || feedbackDto.getSentimentCode() == 3) {
+                log.info("피드백(불만족/분노)에 따라 userId: {} 의 통신 성향을 조정합니다. SentimentCode: {}, DetailCode: {}", userId, feedbackDto.getSentimentCode(), feedbackDto.getDetailCode());
+                adjustPreferenceByFeedback(existingPreference, feedbackDto);
             } else {
                 log.info("피드백(만족)을 수신했습니다. userId: {} 의 통신 성향은 변경되지 않습니다.", userId);
             }
@@ -90,53 +90,50 @@ public class UserPreferenceServiceImpl implements UserPreferenceService {
         }
     }
 
-    private void adjustPreferenceByFeedback(UserPreference preference, Long detailCode) {
-        if (detailCode == 1) {
+    private void adjustPreferenceByFeedback(UserPreference preference, FeedbackDto feedbackDto) {
+        Long detailCode = feedbackDto.getDetailCode();
+        boolean isAngry = feedbackDto.getSentimentCode() == 3;
+        String sentimentState = isAngry ? "분노" : "불만족";
+
+        if (detailCode == 1) { // 데이터 부족
             if (preference.getPreferredDataAllowance() != null) {
-                int currentData = preference.getPreferredDataAllowance();
-
-                currentData = UnitConverter.convertToGigabytes(currentData, preference.getPreferredDataUnit())
-                        .intValue();
-
-                int adjustedData = (int) (currentData * FeedbackConstant.DATA_PLUS_ADJUSTMENT_RATE);
+                int currentData = UnitConverter.convertToGigabytes(preference.getPreferredDataAllowance(), preference.getPreferredDataUnit()).intValue();
+                double adjustmentRate = isAngry ? FeedbackConstant.DATA_PLUS_ADJUSTMENT_RATE_ANGRY : FeedbackConstant.DATA_PLUS_ADJUSTMENT_RATE; //
+                int adjustedData = (int) (currentData * adjustmentRate);
                 preference.setPreferredDataAllowance(adjustedData);
                 preference.setPreferredDataUnit("GB");
-
-                log.info("데이터 부족 피드백: 선호 데이터 {} -> {}", currentData, adjustedData);
+                log.info("데이터 부족 피드백 ({}): 선호 데이터 {} -> {}", sentimentState, currentData, adjustedData);
             }
-        } else if (detailCode == 2) {
+        } else if (detailCode == 2) { // 데이터 너무 많음
             if (preference.getPreferredDataAllowance() != null) {
-                int currentData = preference.getPreferredDataAllowance();
-
-                currentData = UnitConverter.convertToGigabytes(currentData, preference.getPreferredDataUnit())
-                        .intValue();
-
-                int adjustedData = (int) (currentData * FeedbackConstant.DATA_MINUS_ADJUSTMENT_RATE);
+                int currentData = UnitConverter.convertToGigabytes(preference.getPreferredDataAllowance(), preference.getPreferredDataUnit()).intValue();
+                double adjustmentRate = isAngry ? FeedbackConstant.DATA_MINUS_ADJUSTMENT_RATE_ANGRY : FeedbackConstant.DATA_MINUS_ADJUSTMENT_RATE; //
+                int adjustedData = (int) (currentData * adjustmentRate);
                 preference.setPreferredDataAllowance(adjustedData);
                 preference.setPreferredDataUnit("GB");
-
-                log.info("데이터 과다 피드백: 선호 데이터 {} -> {}", currentData, adjustedData);
+                log.info("데이터 과다 피드백 ({}): 선호 데이터 {} -> {}", sentimentState, currentData, adjustedData);
             }
-        } else if (detailCode == 3) {
+        } else if (detailCode == 3) { // 가격 비쌈
             if (preference.getPreferredPrice() != null) {
                 int currentPrice = preference.getPreferredPrice();
-                int adjustedPrice = (int) (currentPrice * FeedbackConstant.PRICE_MINUS_ADJUSTMENT_RATE);
+                double adjustmentRate = isAngry ? FeedbackConstant.PRICE_MINUS_ADJUSTMENT_RATE_ANGRY : FeedbackConstant.PRICE_MINUS_ADJUSTMENT_RATE; //
+                int adjustedPrice = (int) (currentPrice * adjustmentRate);
                 preference.setPreferredPrice(adjustedPrice);
-                log.info("가격 비쌈 피드백: 선호 가격 {} -> {}", currentPrice, adjustedPrice);
+                log.info("가격 비쌈 피드백 ({}): 선호 가격 {} -> {}", sentimentState, currentPrice, adjustedPrice);
             }
-        } else if (detailCode == 4) {
+        } else if (detailCode == 4) { // 가격 너무 저렴
             if (preference.getPreferredPrice() != null) {
                 int currentPrice = preference.getPreferredPrice();
-                int adjustedPrice = (int) (currentPrice * FeedbackConstant.PRICE_PLUS_ADJUSTMENT_RATE);
+                double adjustmentRate = isAngry ? FeedbackConstant.PRICE_PLUS_ADJUSTMENT_RATE_ANGRY : FeedbackConstant.PRICE_PLUS_ADJUSTMENT_RATE; //
+                int adjustedPrice = (int) (currentPrice * adjustmentRate);
                 preference.setPreferredPrice(adjustedPrice);
-                log.info("가격 저렴 피드백: 선호 가격 {} -> {}", currentPrice, adjustedPrice);
+                log.info("가격 저렴 피드백 ({}): 선호 가격 {} -> {}", sentimentState, currentPrice, adjustedPrice);
             }
-        } else if (detailCode == 5) {
+        } else if (detailCode == 5) { // 부가혜택 부족
             if (preference.getPreferredBenefitGroupId() == null || preference.getPreferredBenefitGroupId() == 0) {
                 preference.setPreferredBenefitGroupId(1L);
             }
             log.info("부가혜택 부족 피드백: 부가혜택 가중치를 높입니다.");
-
         } else {
             log.warn("처리할 수 없는 피드백입니다: {}", detailCode);
         }
